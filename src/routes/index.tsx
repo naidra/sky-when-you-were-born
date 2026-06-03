@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import { format } from "date-fns";
 import { StarMap } from "@/components/StarMap";
 import { MoonPhase } from "@/components/MoonPhase";
 import { ShareCard } from "@/components/ShareCard";
-import { CITIES, type City } from "@/lib/cities";
+import { type City } from "@/lib/cities";
 import {
   computeMoon,
   computePlanets,
@@ -74,18 +74,55 @@ function getTzOffsetMinutes(date: Date, tz: string): number {
 function Index() {
   const [dateStr, setDateStr] = useState("1990-06-15");
   const [timeStr, setTimeStr] = useState("21:30");
+
+  type WorldCity = [string, number, number];
+  type WorldState = { n: string; c: WorldCity[] };
+  type WorldCountry = { n: string; tz: string; s: WorldState[] };
+
+  const [world, setWorld] = useState<WorldCountry[] | null>(null);
+  const [countryName, setCountryName] = useState("Kosovo");
+  const [stateName, setStateName] = useState("");
   const [cityName, setCityName] = useState("Pristina");
-  const [customLat, setCustomLat] = useState("");
-  const [customLon, setCustomLon] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/world-cities.json")
+      .then((r) => r.json())
+      .then((d: WorldCountry[]) => {
+        if (!cancelled) setWorld(d);
+      })
+      .catch((e) => console.error("Failed to load world cities", e));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const country = useMemo(
+    () => world?.find((c) => c.n === countryName) ?? world?.[0],
+    [world, countryName],
+  );
+  const stateObj = useMemo(
+    () => country?.s.find((s) => s.n === stateName) ?? country?.s[0],
+    [country, stateName],
+  );
+  const cityRow = useMemo(
+    () => stateObj?.c.find((c) => c[0] === cityName) ?? stateObj?.c[0],
+    [stateObj, cityName],
+  );
 
   const city = useMemo<City>(() => {
-    if (cityName === "__custom") {
-      const lat = parseFloat(customLat) || 0;
-      const lon = parseFloat(customLon) || 0;
-      return { name: "Custom", country: `${lat.toFixed(2)}, ${lon.toFixed(2)}`, lat, lon, tz: "UTC" };
+    if (country && stateObj && cityRow) {
+      return {
+        name: cityRow[0],
+        country: country.n,
+        lat: cityRow[1],
+        lon: cityRow[2],
+        tz: country.tz,
+      };
     }
-    return CITIES.find((c) => c.name === cityName) ?? CITIES[0];
-  }, [cityName, customLat, customLon]);
+    // Sensible fallback before data loads
+    return { name: "Pristina", country: "Kosovo", lat: 42.6629, lon: 21.1655, tz: "Europe/Belgrade" };
+  }, [country, stateObj, cityRow]);
 
   const utcDate = useMemo(() => localToUTC(dateStr, timeStr, city.tz), [dateStr, timeStr, city.tz]);
   const localDate = useMemo(() => {
@@ -142,48 +179,61 @@ function Index() {
         <section className="ornate-border rounded-xl p-6 bg-card/60 backdrop-blur-sm h-fit">
           <h2 className="font-display text-gold tracking-widest text-sm mb-4">OBSERVER</h2>
 
-          <label className="block mb-4">
-            <span className="font-serif text-gold text-sm">Birth city</span>
+          <label className="block mb-3">
+            <span className="font-serif text-gold text-sm">Country</span>
             <select
-              value={cityName}
-              onChange={(e) => setCityName(e.target.value)}
-              className="mt-1 w-full bg-input border border-border rounded-md px-3 py-2 text-foreground font-serif focus:outline-none focus:ring-2 focus:ring-ring"
+              value={countryName}
+              onChange={(e) => {
+                setCountryName(e.target.value);
+                setStateName("");
+                setCityName("");
+              }}
+              disabled={!world}
+              className="mt-1 w-full bg-input border border-border rounded-md px-3 py-2 text-foreground font-serif focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
             >
-              {CITIES.map((c) => (
-                <option key={c.name} value={c.name}>
-                  {c.name}, {c.country}
+              {!world && <option>Loading…</option>}
+              {world?.map((c) => (
+                <option key={c.n} value={c.n}>
+                  {c.n}
                 </option>
               ))}
-              <option value="__custom">Custom coordinates…</option>
             </select>
           </label>
 
-          {cityName === "__custom" && (
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              <label className="block">
-                <span className="font-serif text-gold text-xs">Latitude</span>
-                <input
-                  type="number"
-                  step="0.0001"
-                  value={customLat}
-                  onChange={(e) => setCustomLat(e.target.value)}
-                  placeholder="42.6629"
-                  className="mt-1 w-full bg-input border border-border rounded-md px-2 py-1.5 text-foreground font-serif"
-                />
-              </label>
-              <label className="block">
-                <span className="font-serif text-gold text-xs">Longitude</span>
-                <input
-                  type="number"
-                  step="0.0001"
-                  value={customLon}
-                  onChange={(e) => setCustomLon(e.target.value)}
-                  placeholder="21.1655"
-                  className="mt-1 w-full bg-input border border-border rounded-md px-2 py-1.5 text-foreground font-serif"
-                />
-              </label>
-            </div>
-          )}
+          <label className="block mb-3">
+            <span className="font-serif text-gold text-sm">State / Region</span>
+            <select
+              value={stateObj?.n ?? ""}
+              onChange={(e) => {
+                setStateName(e.target.value);
+                setCityName("");
+              }}
+              disabled={!country}
+              className="mt-1 w-full bg-input border border-border rounded-md px-3 py-2 text-foreground font-serif focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
+            >
+              {country?.s.map((s) => (
+                <option key={s.n} value={s.n}>
+                  {s.n}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="block mb-4">
+            <span className="font-serif text-gold text-sm">Birth city</span>
+            <select
+              value={cityRow?.[0] ?? ""}
+              onChange={(e) => setCityName(e.target.value)}
+              disabled={!stateObj}
+              className="mt-1 w-full bg-input border border-border rounded-md px-3 py-2 text-foreground font-serif focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
+            >
+              {stateObj?.c.map((c) => (
+                <option key={c[0]} value={c[0]}>
+                  {c[0]}
+                </option>
+              ))}
+            </select>
+          </label>
 
           <label className="block mb-4">
             <span className="font-serif text-gold text-sm">Date</span>
