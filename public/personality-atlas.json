@@ -1,0 +1,131 @@
+{
+  "sourceNote": "Local interpretation atlas inspired by standard natal astrology structures. The app calculates actual apparent Sun, Moon, and planet positions with astronomy-engine, then maps those positions to these text entries.",
+  "signs": {
+    "Aries": {
+      "element": "Fire",
+      "modality": "Cardinal",
+      "keywords": ["direct", "brave", "quick-starting"],
+      "summary": "Aries placements describe a personality that learns by entering the arena. You tend to meet life directly, prefer momentum over overthinking, and feel most alive when there is a clear challenge.",
+      "gift": "Courage, initiative, and the ability to wake other people up.",
+      "watch": "Impatience can make a temporary obstacle feel like a permanent wall."
+    },
+    "Taurus": {
+      "element": "Earth",
+      "modality": "Fixed",
+      "keywords": ["steady", "sensual", "loyal"],
+      "summary": "Taurus placements describe a personality that trusts what can be built, touched, and sustained. You often move at your own pace and become powerful through consistency.",
+      "gift": "Endurance, taste, and a calming ability to make ideas real.",
+      "watch": "Comfort can become a cage when change is treated as betrayal."
+    },
+    "Gemini": {
+      "element": "Air",
+      "modality": "Mutable",
+      "keywords": ["curious", "verbal", "adaptable"],
+      "summary": "Gemini placements describe a personality that metabolizes life through questions, language, and pattern-spotting. You need movement of mind and room to connect unlike things.",
+      "gift": "Mental agility, humor, and the ability to translate between worlds.",
+      "watch": "Too many open tabs, literal or emotional, can scatter your force."
+    },
+    "Cancer": {
+      "element": "Water",
+      "modality": "Cardinal",
+      "keywords": ["protective", "intuitive", "memory-rich"],
+      "summary": "Cancer placements describe a personality tuned to belonging, memory, and emotional weather. You often sense what a room needs before anyone says it aloud.",
+      "gift": "Care, emotional intelligence, and fierce devotion.",
+      "watch": "Self-protection can turn into withdrawal when a direct ask would work better."
+    },
+    "Leo": {
+      "element": "Fire",
+      "modality": "Fixed",
+      "keywords": ["expressive", "warm", "creative"],
+      "summary": "Leo placements describe a personality that needs to create, radiate, and stand behind something with heart. You are restored by honest appreciation and meaningful play.",
+      "gift": "Generosity, presence, and the courage to be seen.",
+      "watch": "Pride can make repair harder than it needs to be."
+    },
+    "Virgo": {
+      "element": "Earth",
+      "modality": "Mutable",
+      "keywords": ["precise", "helpful", "discerning"],
+      "summary": "Virgo placements describe a personality that improves life through attention. You notice what is out of tune and often show care by refining, organizing, or healing it.",
+      "gift": "Craft, usefulness, and devotion to getting the details right.",
+      "watch": "The wish to improve everything can blur into self-criticism."
+    },
+    "Libra": {
+      "element": "Air",
+      "modality": "Cardinal",
+      "keywords": ["relational", "aesthetic", "fair-minded"],
+      "summary": "Libra placements describe a personality that seeks proportion, beauty, and mutuality. You are built to notice imbalance and often bring grace to complex social spaces.",
+      "gift": "Diplomacy, charm, and an instinct for humane design.",
+      "watch": "Keeping the peace can become self-erasure when your own preference matters."
+    },
+    "Scorpio": {
+      "element": "Water",
+      "modality": "Fixed",
+      "keywords": ["intense", "private", "transforming"],
+      "summary": "Scorpio placements describe a personality drawn to depth, truth, and hidden motives. You rarely accept the surface version when you can feel the current underneath.",
+      "gift": "Emotional courage, focus, and the capacity to regenerate.",
+      "watch": "Testing trust can become a habit even when trust has already been earned."
+    },
+    "Sagittarius": {
+      "element": "Fire",
+      "modality": "Mutable",
+      "keywords": ["expansive", "truth-seeking", "restless"],
+      "summary": "Sagittarius placements describe a personality that needs meaning, horizon, and honest movement. You grow by following the big question farther than comfort allows.",
+      "gift": "Optimism, candor, and the ability to make life feel larger.",
+      "watch": "Freedom can become avoidance when commitment is the actual adventure."
+    },
+    "Capricorn": {
+      "element": "Earth",
+      "modality": "Cardinal",
+      "keywords": ["ambitious", "structured", "responsible"],
+      "summary": "Capricorn placements describe a personality that respects time, mastery, and earned authority. You are often at your best when building something that can outlast a mood.",
+      "gift": "Discipline, strategy, and reliability under pressure.",
+      "watch": "Carrying too much alone can make support feel suspicious."
+    },
+    "Aquarius": {
+      "element": "Air",
+      "modality": "Fixed",
+      "keywords": ["original", "observant", "future-minded"],
+      "summary": "Aquarius placements describe a personality that needs perspective and intellectual freedom. You often see the system around the story and are drawn to what could be redesigned.",
+      "gift": "Independence, invention, and loyalty to the larger pattern.",
+      "watch": "Detachment can protect you from feelings you still need to feel."
+    },
+    "Pisces": {
+      "element": "Water",
+      "modality": "Mutable",
+      "keywords": ["imaginative", "empathic", "porous"],
+      "summary": "Pisces placements describe a personality with a permeable imagination and a deep instinct for atmosphere. You often understand through symbol, music, dreams, and compassion.",
+      "gift": "Sensitivity, forgiveness, and access to subtle forms of knowing.",
+      "watch": "Boundaries are not a failure of love; they are how love stays clear."
+    }
+  },
+  "elements": {
+    "Fire": "Your chart leans toward ignition: instinct, appetite, courage, and the need to act before the spark cools.",
+    "Earth": "Your chart leans toward embodiment: patience, craft, pragmatism, and the need to see value take form.",
+    "Air": "Your chart leans toward cognition: ideas, exchange, perspective, and the need to name what is happening.",
+    "Water": "Your chart leans toward feeling: memory, intuition, bonding, and the need to honor emotional truth."
+  },
+  "modalities": {
+    "Cardinal": "Cardinal emphasis points to an initiator: you get energy from beginning, directing, and setting things in motion.",
+    "Fixed": "Fixed emphasis points to a stabilizer: you get energy from loyalty, depth, repetition, and sustained devotion.",
+    "Mutable": "Mutable emphasis points to an adapter: you get energy from change, synthesis, learning, and responsive movement."
+  },
+  "planets": {
+    "Mercury": "Mercury visible above the horizon adds an outward mental signature: words, curiosity, and quick noticing want expression.",
+    "Venus": "Venus visible above the horizon emphasizes attraction, style, social warmth, and the instinct to harmonize.",
+    "Mars": "Mars visible above the horizon sharpens drive, heat, appetite, and the courage to pursue what matters.",
+    "Jupiter": "Jupiter visible above the horizon broadens confidence, faith, humor, and the search for generous meaning.",
+    "Saturn": "Saturn visible above the horizon brings seriousness, self-command, patience, and respect for earned growth.",
+    "Uranus": "Uranus visible above the horizon adds independence, experiment, disruption, and a refusal to live only by precedent.",
+    "Neptune": "Neptune visible above the horizon heightens imagination, longing, sensitivity, and symbolic perception."
+  },
+  "moonPhases": {
+    "New Moon": "A New Moon birth often describes a seed-stage temperament: instinctive, self-renewing, and pulled toward beginnings.",
+    "Waxing Crescent": "A Waxing Crescent birth often describes a builder of faith: learning to trust an inner direction before it is fully visible.",
+    "First Quarter": "A First Quarter birth often describes a decisive temperament: growth comes through action, friction, and choice.",
+    "Waxing Gibbous": "A Waxing Gibbous birth often describes a refining temperament: improvement, service, and preparation matter.",
+    "Full Moon": "A Full Moon birth often describes a relational temperament: awareness grows through reflection, contrast, and encounter.",
+    "Waning Gibbous": "A Waning Gibbous birth often describes a teaching temperament: experience wants to be shared, interpreted, or offered.",
+    "Last Quarter": "A Last Quarter birth often describes a questioning temperament: inherited patterns are tested against lived truth.",
+    "Waning Crescent": "A Waning Crescent birth often describes an old-soul temperament: private integration, endings, and quiet wisdom are emphasized."
+  }
+}

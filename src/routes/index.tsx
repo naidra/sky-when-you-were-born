@@ -2,17 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import { format } from "date-fns";
+import { Moon, Sun } from "lucide-react";
 import { StarMap } from "@/components/StarMap";
 import { MoonPhase } from "@/components/MoonPhase";
 import { ShareCard } from "@/components/ShareCard";
 import { type City } from "@/lib/cities";
-import {
-  computeMoon,
-  computePlanets,
-  computeStars,
-  computeSun,
-  type SkyInputs,
-} from "@/lib/sky";
+import { createPersonalityReport, formatPlacement, type PersonalityAtlas } from "@/lib/personality";
+import { computeMoon, computePlanets, computeStars, computeSun, type SkyInputs } from "@/lib/sky";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -71,7 +67,17 @@ function getTzOffsetMinutes(date: Date, tz: string): number {
   return (asUTC - date.getTime()) / 60_000;
 }
 
+type Theme = "light" | "dark";
+
+function getInitialTheme(): Theme {
+  if (typeof window === "undefined") return "dark";
+  const saved = window.localStorage.getItem("sky-theme");
+  if (saved === "light" || saved === "dark") return saved;
+  return "dark";
+}
+
 function Index() {
+  const [theme, setTheme] = useState<Theme>(getInitialTheme);
   const [dateStr, setDateStr] = useState("1990-06-15");
   const [timeStr, setTimeStr] = useState("21:30");
 
@@ -80,9 +86,15 @@ function Index() {
   type WorldCountry = { n: string; tz: string; s: WorldState[] };
 
   const [world, setWorld] = useState<WorldCountry[] | null>(null);
+  const [personalityAtlas, setPersonalityAtlas] = useState<PersonalityAtlas | null>(null);
   const [countryName, setCountryName] = useState("Kosovo");
   const [stateName, setStateName] = useState("");
   const [cityName, setCityName] = useState("Pristina");
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    window.localStorage.setItem("sky-theme", theme);
+  }, [theme]);
 
   useEffect(() => {
     let cancelled = false;
@@ -92,6 +104,19 @@ function Index() {
         if (!cancelled) setWorld(d);
       })
       .catch((e) => console.error("Failed to load world cities", e));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/personality-atlas.json")
+      .then((r) => r.json())
+      .then((d: PersonalityAtlas) => {
+        if (!cancelled) setPersonalityAtlas(d);
+      })
+      .catch((e) => console.error("Failed to load personality atlas", e));
     return () => {
       cancelled = true;
     };
@@ -121,7 +146,13 @@ function Index() {
       };
     }
     // Sensible fallback before data loads
-    return { name: "Pristina", country: "Kosovo", lat: 42.6629, lon: 21.1655, tz: "Europe/Belgrade" };
+    return {
+      name: "Pristina",
+      country: "Kosovo",
+      lat: 42.6629,
+      lon: 21.1655,
+      tz: "Europe/Belgrade",
+    };
   }, [country, stateObj, cityRow]);
 
   const utcDate = useMemo(() => localToUTC(dateStr, timeStr, city.tz), [dateStr, timeStr, city.tz]);
@@ -140,6 +171,11 @@ function Index() {
   const planets = useMemo(() => computePlanets(input), [input]);
   const sun = useMemo(() => computeSun(input), [input]);
   const visibleStars = useMemo(() => computeStars(input).filter((s) => s.alt > 0).length, [input]);
+  const personalityReport = useMemo(
+    () =>
+      personalityAtlas ? createPersonalityReport(input, moon.phaseName, personalityAtlas) : null,
+    [input, moon.phaseName, personalityAtlas],
+  );
 
   const shareRef = useRef<HTMLDivElement>(null);
 
@@ -157,30 +193,50 @@ function Index() {
   };
 
   const formatTime = (d: Date | null) =>
-    d ? new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: city.tz }).format(d) : "—";
+    d
+      ? new Intl.DateTimeFormat("en-GB", {
+          hour: "2-digit",
+          minute: "2-digit",
+          timeZone: city.tz,
+        }).format(d)
+      : "—";
 
   return (
     <div className="min-h-screen text-foreground">
+      <div className="mx-auto flex max-w-7xl justify-end px-4 pt-4">
+        <button
+          type="button"
+          onClick={() => setTheme((current) => (current === "dark" ? "light" : "dark"))}
+          className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-card/85 px-3 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring"
+          aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
+        >
+          {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
+          <span>{theme === "dark" ? "Light" : "Dark"}</span>
+        </button>
+      </div>
+
       {/* Header */}
-      <header className="text-center pt-12 pb-6 px-4">
-        <p className="font-display text-gold tracking-[0.4em] text-xs opacity-80">
+      <header className="text-center pt-6 pb-8 px-4">
+        <p className="font-sans font-semibold uppercase text-gold tracking-[0.22em] text-xs">
           DER STERNENHIMMEL
         </p>
-        <h1 className="font-display text-gold-bright text-4xl md:text-5xl mt-3 tracking-widest">
+        <h1 className="font-display text-gold-bright text-4xl md:text-6xl mt-3">
           The Sky When You Were Born
         </h1>
-        <p className="font-serif italic text-gold mt-3 text-lg opacity-80 max-w-xl mx-auto">
+        <p className="font-serif italic text-muted-foreground mt-4 text-lg md:text-xl max-w-2xl mx-auto">
           Zu jeder Stunde des Jahres — a digital planisphere for any moment in history.
         </p>
       </header>
 
       <div className="max-w-7xl mx-auto px-4 pb-20 grid lg:grid-cols-[1fr_2fr] gap-8">
         {/* Controls */}
-        <section className="ornate-border rounded-xl p-6 bg-card/60 backdrop-blur-sm h-fit">
-          <h2 className="font-display text-gold tracking-widest text-sm mb-4">OBSERVER</h2>
+        <section className="ornate-border rounded-xl p-6 bg-card/85 backdrop-blur-sm h-fit">
+          <h2 className="font-sans font-semibold uppercase text-gold tracking-[0.18em] text-xs mb-5">
+            Observer
+          </h2>
 
           <label className="block mb-3">
-            <span className="font-serif text-gold text-sm">Country</span>
+            <span className="font-sans font-medium text-muted-foreground text-sm">Country</span>
             <select
               value={countryName}
               onChange={(e) => {
@@ -189,7 +245,7 @@ function Index() {
                 setCityName("");
               }}
               disabled={!world}
-              className="mt-1 w-full bg-input border border-border rounded-md px-3 py-2 text-foreground font-serif focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
+              className="mt-1 w-full bg-input border border-border rounded-md px-3 py-2 text-foreground font-sans text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
             >
               {!world && <option>Loading…</option>}
               {world?.map((c) => (
@@ -201,7 +257,9 @@ function Index() {
           </label>
 
           <label className="block mb-3">
-            <span className="font-serif text-gold text-sm">State / Region</span>
+            <span className="font-sans font-medium text-muted-foreground text-sm">
+              State / Region
+            </span>
             <select
               value={stateObj?.n ?? ""}
               onChange={(e) => {
@@ -209,7 +267,7 @@ function Index() {
                 setCityName("");
               }}
               disabled={!country}
-              className="mt-1 w-full bg-input border border-border rounded-md px-3 py-2 text-foreground font-serif focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
+              className="mt-1 w-full bg-input border border-border rounded-md px-3 py-2 text-foreground font-sans text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
             >
               {country?.s.map((s) => (
                 <option key={s.n} value={s.n}>
@@ -220,12 +278,12 @@ function Index() {
           </label>
 
           <label className="block mb-4">
-            <span className="font-serif text-gold text-sm">Birth city</span>
+            <span className="font-sans font-medium text-muted-foreground text-sm">Birth city</span>
             <select
               value={cityRow?.[0] ?? ""}
               onChange={(e) => setCityName(e.target.value)}
               disabled={!stateObj}
-              className="mt-1 w-full bg-input border border-border rounded-md px-3 py-2 text-foreground font-serif focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
+              className="mt-1 w-full bg-input border border-border rounded-md px-3 py-2 text-foreground font-sans text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-60"
             >
               {stateObj?.c.map((c) => (
                 <option key={c[0]} value={c[0]}>
@@ -236,41 +294,49 @@ function Index() {
           </label>
 
           <label className="block mb-4">
-            <span className="font-serif text-gold text-sm">Date</span>
+            <span className="font-sans font-medium text-muted-foreground text-sm">Date</span>
             <input
               type="date"
               value={dateStr}
               onChange={(e) => setDateStr(e.target.value)}
-              className="mt-1 w-full bg-input border border-border rounded-md px-3 py-2 text-foreground font-serif focus:outline-none focus:ring-2 focus:ring-ring [color-scheme:dark]"
+              className="mt-1 w-full bg-input border border-border rounded-md px-3 py-2 text-foreground font-sans text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring [color-scheme:light] dark:[color-scheme:dark]"
             />
           </label>
 
           <label className="block mb-6">
-            <span className="font-serif text-gold text-sm">Time (local)</span>
+            <span className="font-sans font-medium text-muted-foreground text-sm">
+              Time (local)
+            </span>
             <input
               type="time"
               value={timeStr}
               onChange={(e) => setTimeStr(e.target.value)}
-              className="mt-1 w-full bg-input border border-border rounded-md px-3 py-2 text-foreground font-serif focus:outline-none focus:ring-2 focus:ring-ring [color-scheme:dark]"
+              className="mt-1 w-full bg-input border border-border rounded-md px-3 py-2 text-foreground font-sans text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring [color-scheme:light] dark:[color-scheme:dark]"
             />
           </label>
 
           <div className="border-t border-border pt-4 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="font-serif text-gold opacity-80 text-sm">Sunrise</span>
-              <span className="font-display text-gold-bright text-sm">{formatTime(sun.rise)}</span>
+              <span className="font-sans text-muted-foreground text-sm">Sunrise</span>
+              <span className="font-sans font-semibold text-gold-bright text-sm">
+                {formatTime(sun.rise)}
+              </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="font-serif text-gold opacity-80 text-sm">Sunset</span>
-              <span className="font-display text-gold-bright text-sm">{formatTime(sun.set)}</span>
+              <span className="font-sans text-muted-foreground text-sm">Sunset</span>
+              <span className="font-sans font-semibold text-gold-bright text-sm">
+                {formatTime(sun.set)}
+              </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="font-serif text-gold opacity-80 text-sm">Visible stars</span>
-              <span className="font-display text-gold-bright text-sm">{visibleStars}</span>
+              <span className="font-sans text-muted-foreground text-sm">Visible stars</span>
+              <span className="font-sans font-semibold text-gold-bright text-sm">
+                {visibleStars}
+              </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="font-serif text-gold opacity-80 text-sm">Moon altitude</span>
-              <span className="font-display text-gold-bright text-sm">
+              <span className="font-sans text-muted-foreground text-sm">Moon altitude</span>
+              <span className="font-sans font-semibold text-gold-bright text-sm">
                 {moon.alt > 0 ? `${moon.alt.toFixed(1)}° up` : "below horizon"}
               </span>
             </div>
@@ -278,7 +344,7 @@ function Index() {
 
           <button
             onClick={handleShare}
-            className="mt-6 w-full font-display tracking-widest text-sm py-3 rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity ornate-border"
+            className="mt-6 w-full font-sans font-semibold uppercase tracking-[0.12em] text-xs py-3 rounded-md bg-primary text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring"
           >
             DOWNLOAD SHAREABLE CARD
           </button>
@@ -286,31 +352,37 @@ function Index() {
 
         {/* Map + side info */}
         <section className="space-y-6">
-          <div className="ornate-border rounded-full mx-auto p-3 bg-card/40" style={{ width: "fit-content" }}>
+          <div
+            className="ornate-border sky-frame rounded-full mx-auto p-3 bg-night"
+            style={{ width: "fit-content" }}
+          >
             <StarMap input={input} size={560} ornate showLabels />
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
             {/* Moon panel */}
-            <div className="ornate-border rounded-xl p-5 bg-card/60 flex items-center gap-4">
+            <div className="ornate-border rounded-xl p-5 bg-card/85 flex items-center gap-4">
               <MoonPhase phaseAngle={moon.phaseAngle} illumination={moon.illumination} size={88} />
               <div>
-                <p className="font-display text-gold text-[10px] tracking-widest opacity-70">MOON</p>
-                <p className="font-serif text-gold-bright text-xl">{moon.phaseName}</p>
-                <p className="font-serif text-gold text-xs opacity-80">
-                  {(moon.illumination * 100).toFixed(0)}% illuminated · phase {moon.phaseAngle.toFixed(0)}°
+                <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em]">
+                  MOON
+                </p>
+                <p className="font-display text-gold-bright text-xl mt-1">{moon.phaseName}</p>
+                <p className="font-sans text-muted-foreground text-xs mt-1">
+                  {(moon.illumination * 100).toFixed(0)}% illuminated · phase{" "}
+                  {moon.phaseAngle.toFixed(0)}°
                 </p>
               </div>
             </div>
 
             {/* Planets panel */}
-            <div className="ornate-border rounded-xl p-5 bg-card/60">
-              <p className="font-display text-gold text-[10px] tracking-widest opacity-70 mb-2">
+            <div className="ornate-border rounded-xl p-5 bg-card/85">
+              <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em] mb-3">
                 PLANETS
               </p>
               <ul className="space-y-1">
                 {planets.map((p) => (
-                  <li key={p.name} className="flex justify-between font-serif text-sm">
+                  <li key={p.name} className="flex justify-between font-sans text-sm">
                     <span className={p.visible ? "text-gold-bright" : "text-gold opacity-40"}>
                       {p.name}
                     </span>
@@ -325,7 +397,122 @@ function Index() {
             </div>
           </div>
 
-          <p className="text-center font-serif italic text-gold opacity-60 text-sm">
+          <div className="ornate-border rounded-xl p-6 bg-card/85">
+            <div className="flex flex-col gap-2 border-b border-border pb-4 md:flex-row md:items-end md:justify-between">
+              <div>
+                <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em]">
+                  PERSONALITY REPORT
+                </p>
+                <h2 className="font-display text-gold-bright text-2xl mt-1">
+                  {personalityReport?.title ?? "Reading the sky..."}
+                </h2>
+              </div>
+              {personalityReport && (
+                <p className="font-sans font-semibold uppercase text-gold text-xs tracking-[0.16em]">
+                  {personalityReport.dominantElement} · {personalityReport.dominantModality}
+                </p>
+              )}
+            </div>
+
+            {personalityReport ? (
+              <div className="pt-5 space-y-5">
+                <p className="font-serif text-foreground text-lg leading-relaxed">
+                  {personalityReport.summary}
+                </p>
+
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <div>
+                    <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em]">
+                      SUN
+                    </p>
+                    <p className="font-sans font-semibold text-gold-bright mt-1">
+                      {formatPlacement(personalityReport.sun)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em]">
+                      MOON
+                    </p>
+                    <p className="font-sans font-semibold text-gold-bright mt-1">
+                      {formatPlacement(personalityReport.moon)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em]">
+                      VISIBLE PLANETS
+                    </p>
+                    <p className="font-sans font-semibold text-gold-bright mt-1">
+                      {personalityReport.visiblePlanets.length
+                        ? personalityReport.visiblePlanets.map((p) => p.name).join(", ")
+                        : "None above horizon"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em]">
+                      FIXED STAR
+                    </p>
+                    <p className="font-sans font-semibold text-gold-bright mt-1">
+                      {personalityReport.fixedStar?.star.name ?? "Below horizon"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {personalityReport.keywords.map((keyword) => (
+                    <span
+                      key={keyword}
+                      className="rounded border border-border bg-secondary/80 px-2 py-1 font-sans font-medium text-xs text-gold"
+                    >
+                      {keyword}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="grid gap-5 md:grid-cols-3">
+                  <div>
+                    <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em] mb-2">
+                      STRENGTHS
+                    </p>
+                    <ul className="space-y-2 font-sans text-sm leading-relaxed text-foreground">
+                      {personalityReport.strengths.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em] mb-2">
+                      GROWTH EDGE
+                    </p>
+                    <ul className="space-y-2 font-sans text-sm leading-relaxed text-foreground">
+                      {personalityReport.growth.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em] mb-2">
+                      SKY NOTES
+                    </p>
+                    <ul className="space-y-2 font-sans text-sm leading-relaxed text-foreground">
+                      {personalityReport.skyNotes.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <p className="font-sans text-muted-foreground text-xs">
+                  For reflection and entertainment, not a scientific personality assessment.
+                </p>
+              </div>
+            ) : (
+              <p className="pt-5 font-sans text-muted-foreground text-sm">
+                Loading the interpretation atlas...
+              </p>
+            )}
+          </div>
+
+          <p className="text-center font-serif italic text-muted-foreground text-sm">
             {format(localDate, "MMMM d, yyyy 'at' HH:mm")} · {city.name}, {city.country}
           </p>
         </section>

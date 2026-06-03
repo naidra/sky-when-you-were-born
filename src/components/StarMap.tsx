@@ -54,7 +54,7 @@ export function StarMap({ input, size = 560, showLabels = true, ornate = true }:
       width={size}
       height={size}
       viewBox={`0 0 ${size} ${size}`}
-      style={{ display: "block" }}
+      style={{ display: "block", overflow: "visible" }}
     >
       <defs>
         <radialGradient id="sky-bg" cx="50%" cy="50%" r="50%">
@@ -67,6 +67,10 @@ export function StarMap({ input, size = 560, showLabels = true, ornate = true }:
           <stop offset="60%" stopColor="#fff8e0" stopOpacity="0.6" />
           <stop offset="100%" stopColor="#fff8e0" stopOpacity="0" />
         </radialGradient>
+        <filter id="label-glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="0" stdDeviation="2" floodColor="#fff2b8" floodOpacity="0.55" />
+          <feDropShadow dx="0" dy="1" stdDeviation="1" floodColor="#000814" floodOpacity="0.75" />
+        </filter>
         <clipPath id="sky-clip">
           <circle cx={cx} cy={cy} r={R} />
         </clipPath>
@@ -76,7 +80,15 @@ export function StarMap({ input, size = 560, showLabels = true, ornate = true }:
       {ornate && (
         <>
           <circle cx={cx} cy={cy} r={R + 2} fill="none" stroke="var(--gold-deep)" strokeWidth="1" />
-          <circle cx={cx} cy={cy} r={R - 1} fill="none" stroke="var(--gold)" strokeWidth="0.6" opacity="0.7" />
+          <circle
+            cx={cx}
+            cy={cy}
+            r={R - 1}
+            fill="none"
+            stroke="var(--gold)"
+            strokeWidth="0.6"
+            opacity="0.7"
+          />
         </>
       )}
 
@@ -85,14 +97,39 @@ export function StarMap({ input, size = 560, showLabels = true, ornate = true }:
 
       <g clipPath="url(#sky-clip)">
         {/* Cardinal direction lines (very subtle) */}
-        <line x1={cx} y1={cy - R} x2={cx} y2={cy + R} stroke="var(--gold-deep)" strokeWidth="0.3" opacity="0.3" />
-        <line x1={cx - R} y1={cy} x2={cx + R} y2={cy} stroke="var(--gold-deep)" strokeWidth="0.3" opacity="0.3" />
+        <line
+          x1={cx}
+          y1={cy - R}
+          x2={cx}
+          y2={cy + R}
+          stroke="var(--gold-deep)"
+          strokeWidth="0.3"
+          opacity="0.3"
+        />
+        <line
+          x1={cx - R}
+          y1={cy}
+          x2={cx + R}
+          y2={cy}
+          stroke="var(--gold-deep)"
+          strokeWidth="0.3"
+          opacity="0.3"
+        />
 
         {/* Altitude rings */}
         {[30, 60].map((alt) => {
           const r = Math.tan(((90 - alt) * Math.PI) / 180 / 2) * R;
           return (
-            <circle key={alt} cx={cx} cy={cy} r={r} fill="none" stroke="var(--gold-deep)" strokeWidth="0.3" opacity="0.3" />
+            <circle
+              key={alt}
+              cx={cx}
+              cy={cy}
+              r={r}
+              fill="none"
+              stroke="var(--gold-deep)"
+              strokeWidth="0.3"
+              opacity="0.3"
+            />
           );
         })}
 
@@ -158,29 +195,51 @@ export function StarMap({ input, size = 560, showLabels = true, ornate = true }:
         })}
 
         {/* Moon */}
-        {moon.alt > 0 && (() => {
-          const { x, y } = toScreen(moon.alt, moon.az);
-          return (
-            <g>
-              <circle cx={x} cy={y} r={14} fill="#fff8e0" opacity="0.12" />
-              <circle cx={x} cy={y} r={7} fill="#f5e6b8" stroke="var(--gold)" strokeWidth="0.6" />
-              {showLabels && (
-                <text x={x + 10} y={y + 4} fontSize="10" fill="var(--gold-bright)" fontWeight="600">
-                  Moon
-                </text>
-              )}
-            </g>
-          );
-        })()}
+        {moon.alt > 0 &&
+          (() => {
+            const { x, y } = toScreen(moon.alt, moon.az);
+            return (
+              <g>
+                <circle cx={x} cy={y} r={14} fill="#fff8e0" opacity="0.12" />
+                <circle cx={x} cy={y} r={7} fill="#f5e6b8" stroke="var(--gold)" strokeWidth="0.6" />
+                {showLabels && (
+                  <text
+                    x={x + 10}
+                    y={y + 4}
+                    fontSize="10"
+                    fill="var(--gold-bright)"
+                    fontWeight="600"
+                  >
+                    Moon
+                  </text>
+                )}
+              </g>
+            );
+          })()}
       </g>
 
       {/* Cardinal labels */}
       {ornate && (
-        <g fontFamily="var(--font-display)" fontSize="12" fill="var(--gold)" textAnchor="middle">
-          <text x={cx} y={18}>N</text>
-          <text x={cx} y={size - 8}>S</text>
-          <text x={14} y={cy + 4}>E</text>
-          <text x={size - 14} y={cy + 4}>W</text>
+        <g
+          fontFamily="var(--font-display)"
+          fontSize="28"
+          fontWeight="700"
+          fill="var(--gold-bright)"
+          textAnchor="middle"
+          filter="url(#label-glow)"
+        >
+          <text x={cx} y={cy - R - 2}>
+            N
+          </text>
+          <text x={cx} y={cy + R + 16}>
+            S
+          </text>
+          <text x={cx - R - 10} y={cy + 7}>
+            E
+          </text>
+          <text x={cx + R + 10} y={cy + 7}>
+            W
+          </text>
         </g>
       )}
     </svg>

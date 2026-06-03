@@ -66,11 +66,38 @@ export function MoonPhase({ phaseAngle, illumination, size = 120 }: MoonPhasePro
           <stop offset="0%" stopColor="oklch(0.98 0.04 85)" />
           <stop offset="100%" stopColor="oklch(0.82 0.08 80)" />
         </radialGradient>
+        <filter id="moon-label-glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="0" stdDeviation="1.4" floodColor="#fff2b8" floodOpacity="0.45" />
+          <feDropShadow dx="0" dy="1" stdDeviation="1" floodColor="#000814" floodOpacity="0.75" />
+        </filter>
       </defs>
-      <circle cx={cx} cy={cy} r={r} fill="url(#moon-dark)" stroke="var(--gold-deep)" strokeWidth="1" />
+      <circle
+        cx={cx}
+        cy={cy}
+        r={r}
+        fill="url(#moon-dark)"
+        stroke="var(--gold-deep)"
+        strokeWidth="1"
+      />
       <path d={d} fill="url(#moon-lit)" />
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--gold)" strokeWidth="1" opacity="0.5" />
-      <text x={cx} y={size - 4} textAnchor="middle" fontSize="9" fill="var(--gold)" opacity="0.6">
+      <circle
+        cx={cx}
+        cy={cy}
+        r={r}
+        fill="none"
+        stroke="var(--gold)"
+        strokeWidth="1"
+        opacity="0.5"
+      />
+      <text
+        x={cx}
+        y={size - 5}
+        textAnchor="middle"
+        fontSize="11"
+        fontWeight="700"
+        fill="var(--gold-bright)"
+        filter="url(#moon-label-glow)"
+      >
         {Math.round(illumination * 100)}% lit
       </text>
     </svg>
