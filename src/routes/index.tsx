@@ -2,13 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import { format } from "date-fns";
-import { Moon, Sun } from "lucide-react";
+import { ChevronDown, Moon, Sun } from "lucide-react";
 import { StarMap } from "@/components/StarMap";
 import { MoonPhase } from "@/components/MoonPhase";
 import { ShareCard } from "@/components/ShareCard";
 import { type City } from "@/lib/cities";
 import { createPersonalityReport, formatPlacement, type PersonalityAtlas } from "@/lib/personality";
 import { computeMoon, computePlanets, computeStars, computeSun, type SkyInputs } from "@/lib/sky";
+import { createTransitReport, type TransitAtlas } from "@/lib/transits";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -78,6 +79,8 @@ function getInitialTheme(): Theme {
 
 function Index() {
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
+  const [currentDate, setCurrentDate] = useState<Date | null>(null);
+  const [showCurrentPositions, setShowCurrentPositions] = useState(false);
   const [dateStr, setDateStr] = useState("1990-06-15");
   const [timeStr, setTimeStr] = useState("21:30");
 
@@ -87,6 +90,7 @@ function Index() {
 
   const [world, setWorld] = useState<WorldCountry[] | null>(null);
   const [personalityAtlas, setPersonalityAtlas] = useState<PersonalityAtlas | null>(null);
+  const [transitAtlas, setTransitAtlas] = useState<TransitAtlas | null>(null);
   const [countryName, setCountryName] = useState("Kosovo");
   const [stateName, setStateName] = useState("");
   const [cityName, setCityName] = useState("Pristina");
@@ -95,6 +99,12 @@ function Index() {
     document.documentElement.classList.toggle("dark", theme === "dark");
     window.localStorage.setItem("sky-theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    setCurrentDate(new Date());
+    const interval = window.setInterval(() => setCurrentDate(new Date()), 60_000);
+    return () => window.clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -117,6 +127,19 @@ function Index() {
         if (!cancelled) setPersonalityAtlas(d);
       })
       .catch((e) => console.error("Failed to load personality atlas", e));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/transit-interpretations.json")
+      .then((r) => r.json())
+      .then((d: TransitAtlas) => {
+        if (!cancelled) setTransitAtlas(d);
+      })
+      .catch((e) => console.error("Failed to load transit interpretations", e));
     return () => {
       cancelled = true;
     };
@@ -175,6 +198,13 @@ function Index() {
     () =>
       personalityAtlas ? createPersonalityReport(input, moon.phaseName, personalityAtlas) : null,
     [input, moon.phaseName, personalityAtlas],
+  );
+  const transitReport = useMemo(
+    () =>
+      currentDate && transitAtlas && personalityReport
+        ? createTransitReport(currentDate, personalityReport.placements, transitAtlas)
+        : null,
+    [currentDate, personalityReport, transitAtlas],
   );
 
   const shareRef = useRef<HTMLDivElement>(null);
@@ -508,6 +538,128 @@ function Index() {
             ) : (
               <p className="pt-5 font-sans text-muted-foreground text-sm">
                 Loading the interpretation atlas...
+              </p>
+            )}
+          </div>
+
+          <div className="ornate-border rounded-xl p-6 bg-card/85">
+            <div className="flex flex-col gap-2 border-b border-border pb-4 md:flex-row md:items-end md:justify-between">
+              <div>
+                <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em]">
+                  CURRENT PLANET POSITIONS
+                </p>
+                <h2 className="font-display text-gold-bright text-2xl mt-1">Transit Calculator</h2>
+              </div>
+              {transitReport && (
+                <p className="font-sans text-muted-foreground text-xs">
+                  Updated {format(transitReport.generatedAt, "MMM d, yyyy HH:mm")}
+                </p>
+              )}
+            </div>
+
+            {transitReport ? (
+              <div className="pt-5 space-y-6">
+                <div className="rounded-md border border-border bg-background/25">
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPositions((current) => !current)}
+                    aria-expanded={showCurrentPositions}
+                    className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-secondary/50 focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <div>
+                      <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em]">
+                        Current positions
+                      </p>
+                      <p className="font-sans text-muted-foreground text-sm mt-1">
+                        Sun, Moon, Mercury, Venus and planets by sign.
+                      </p>
+                    </div>
+                    <ChevronDown
+                      className={`size-5 shrink-0 text-gold transition-transform ${
+                        showCurrentPositions ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {showCurrentPositions && (
+                    <div className="grid gap-3 border-t border-border p-4 sm:grid-cols-2 lg:grid-cols-5">
+                      {transitReport.currentPositions.map((placement) => (
+                        <div
+                          key={placement.body}
+                          className="rounded-md border border-border bg-secondary/50 px-3 py-3"
+                        >
+                          <p className="font-sans font-semibold uppercase text-gold text-[10px] tracking-[0.16em]">
+                            {placement.body}
+                          </p>
+                          <p className="font-sans font-semibold text-gold-bright mt-1">
+                            {formatPlacement(placement)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <div className="mb-3 flex items-end justify-between gap-3">
+                    <div>
+                      <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em]">
+                        ACTIVE TRANSITS
+                      </p>
+                      <p className="font-sans text-muted-foreground text-sm mt-1">
+                        Major aspects from current planets to your natal chart.
+                      </p>
+                    </div>
+                    <p className="font-sans font-semibold text-gold-bright text-sm">
+                      {transitReport.activeTransits.length}
+                    </p>
+                  </div>
+
+                  {transitReport.activeTransits.length ? (
+                    <div className="space-y-3">
+                      {transitReport.activeTransits.map((transit) => (
+                        <article
+                          key={`${transit.transit.body}-${transit.aspect}-${transit.natal.body}-${transit.orb.toFixed(2)}`}
+                          className="rounded-md border border-border bg-background/35 p-4"
+                        >
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                              <h3 className="font-display text-gold-bright text-lg">
+                                {transit.transit.body} {transit.aspect} natal {transit.natal.body}
+                              </h3>
+                              <p className="font-sans text-muted-foreground text-xs mt-1">
+                                {formatPlacement(transit.transit)} to{" "}
+                                {formatPlacement(transit.natal)} · orb {transit.orb.toFixed(1)}°
+                              </p>
+                            </div>
+                            <span className="w-fit rounded-full border border-border bg-secondary/70 px-2 py-1 font-sans font-semibold uppercase tracking-[0.14em] text-[10px] text-gold">
+                              {transit.tone}
+                            </span>
+                          </div>
+                          <p className="mt-3 font-sans text-sm leading-relaxed text-foreground">
+                            {transit.interpretation}
+                          </p>
+                          <p className="mt-2 font-serif italic text-muted-foreground text-sm">
+                            {transit.prompt}
+                          </p>
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="rounded-md border border-border bg-background/35 p-4 font-sans text-sm text-muted-foreground">
+                      No major transits are within the active orb right now.
+                    </p>
+                  )}
+                </div>
+
+                <p className="font-sans text-muted-foreground text-xs">
+                  Transit interpretations are generated from{" "}
+                  <span className="text-gold">transit-interpretations.json</span>.
+                </p>
+              </div>
+            ) : (
+              <p className="pt-5 font-sans text-muted-foreground text-sm">
+                Loading current positions and transit interpretations...
               </p>
             )}
           </div>
