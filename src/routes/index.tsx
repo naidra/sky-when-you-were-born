@@ -80,6 +80,7 @@ function getInitialTheme(): Theme {
 function Index() {
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
   const [currentDate, setCurrentDate] = useState<Date | null>(null);
+  const [showTransitCalculator, setShowTransitCalculator] = useState(false);
   const [showCurrentPositions, setShowCurrentPositions] = useState(false);
   const [dateStr, setDateStr] = useState("1990-06-15");
   const [timeStr, setTimeStr] = useState("21:30");
@@ -542,23 +543,33 @@ function Index() {
             )}
           </div>
 
-          <div className="ornate-border rounded-xl p-6 bg-card/85">
-            <div className="flex flex-col gap-2 border-b border-border pb-4 md:flex-row md:items-end md:justify-between">
+          <div className="ornate-border rounded-xl bg-card/85">
+            <button
+              type="button"
+              onClick={() => setShowTransitCalculator((current) => !current)}
+              aria-expanded={showTransitCalculator}
+              className="flex w-full items-center justify-between gap-4 p-6 text-left transition-colors hover:bg-secondary/35 focus:outline-none focus:ring-2 focus:ring-ring"
+            >
               <div>
                 <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em]">
                   CURRENT PLANET POSITIONS
                 </p>
                 <h2 className="font-display text-gold-bright text-2xl mt-1">Transit Calculator</h2>
+                {transitReport && (
+                  <p className="font-sans text-muted-foreground text-xs mt-2">
+                    Updated {format(transitReport.generatedAt, "MMM d, yyyy HH:mm")}
+                  </p>
+                )}
               </div>
-              {transitReport && (
-                <p className="font-sans text-muted-foreground text-xs">
-                  Updated {format(transitReport.generatedAt, "MMM d, yyyy HH:mm")}
-                </p>
-              )}
-            </div>
+              <ChevronDown
+                className={`size-6 shrink-0 text-gold transition-transform ${
+                  showTransitCalculator ? "rotate-180" : ""
+                }`}
+              />
+            </button>
 
-            {transitReport ? (
-              <div className="pt-5 space-y-6">
+            {showTransitCalculator && transitReport ? (
+              <div className="space-y-6 border-t border-border px-6 pb-6 pt-5">
                 <div className="rounded-md border border-border bg-background/25">
                   <button
                     type="button"
@@ -624,6 +635,9 @@ function Index() {
                         >
                           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                             <div>
+                              <p className="mb-1 font-sans font-semibold uppercase text-gold text-[10px] tracking-[0.16em]">
+                                {transit.lifeTheme}
+                              </p>
                               <h3 className="font-display text-gold-bright text-lg">
                                 {transit.transit.body} {transit.aspect} natal {transit.natal.body}
                               </h3>
@@ -657,11 +671,11 @@ function Index() {
                   <span className="text-gold">transit-interpretations.json</span>.
                 </p>
               </div>
-            ) : (
-              <p className="pt-5 font-sans text-muted-foreground text-sm">
+            ) : showTransitCalculator ? (
+              <p className="border-t border-border px-6 pb-6 pt-5 font-sans text-muted-foreground text-sm">
                 Loading current positions and transit interpretations...
               </p>
-            )}
+            ) : null}
           </div>
 
           <p className="text-center font-serif italic text-muted-foreground text-sm">

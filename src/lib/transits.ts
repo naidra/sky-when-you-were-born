@@ -36,6 +36,13 @@ export interface TransitComboInterpretation {
   guidance: string;
 }
 
+export interface LifeThemeRules {
+  natalBodies?: Record<string, string>;
+  transitPlanets?: Record<string, string>;
+  combinations?: Record<string, Record<string, string>>;
+  aspectModifiers?: Partial<Record<AspectName, string>>;
+}
+
 export interface TransitAtlas {
   sourceNote: string;
   calculationModel?: Record<string, unknown>;
@@ -47,6 +54,7 @@ export interface TransitAtlas {
   motionStates?: Record<string, unknown>;
   transitPlanets: Record<string, TransitPlanetInterpretation>;
   natalBodies: Record<string, NatalBodyInterpretation>;
+  lifeThemeRules?: LifeThemeRules;
   comboTemplates?: Record<string, Record<string, TransitComboInterpretation>>;
 }
 
@@ -57,6 +65,7 @@ export interface ActiveTransit {
   orb: number;
   exactness: number;
   tone: string;
+  lifeTheme: string;
   interpretation: string;
   prompt: string;
 }
@@ -149,6 +158,25 @@ function buildInterpretation(
     .join(" ");
 }
 
+function buildLifeTheme(
+  transit: Placement,
+  natal: Placement,
+  aspect: AspectName,
+  atlas: TransitAtlas,
+): string {
+  const rules = atlas.lifeThemeRules;
+  const combinationTheme = rules?.combinations?.[transit.body]?.[natal.body];
+  if (combinationTheme) return combinationTheme;
+
+  const natalTheme = rules?.natalBodies?.[natal.body];
+  if (natalTheme) {
+    const modifier = rules?.aspectModifiers?.[aspect];
+    return modifier ? `${modifier} ${natalTheme}` : natalTheme;
+  }
+
+  return atlas.comboTemplates?.[transit.body]?.[natal.body]?.focus ?? `${natal.body} activation`;
+}
+
 export function calculateCurrentPlanetPositions(date: Date): Placement[] {
   return TRANSIT_BODIES.map(({ body, astroBody }) =>
     longitudeToPlacement(body, eclipticLongitude(astroBody, date)),
@@ -181,6 +209,7 @@ export function createTransitReport(
         orb: match.orb,
         exactness: atlas.orbDegrees[match.name] - match.orb,
         tone: aspectText.tone,
+        lifeTheme: buildLifeTheme(transit, natal, match.name, atlas),
         interpretation: buildInterpretation(transit, natal, match.name, atlas),
         prompt: aspectText.prompt,
       };

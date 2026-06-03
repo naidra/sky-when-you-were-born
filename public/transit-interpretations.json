@@ -277,6 +277,128 @@
       "question": "What structure, limit or commitment would make this more real?"
     }
   },
+  "lifeThemeRules": {
+    "natalBodies": {
+      "Sun": "Life direction",
+      "Moon": "Emotional reset",
+      "Mercury": "Mindset shift",
+      "Venus": "Relationships evolution",
+      "Mars": "Action and courage",
+      "Jupiter": "Growth chapter",
+      "Saturn": "Career and responsibility"
+    },
+    "transitPlanets": {
+      "Sun": "Spotlight moment",
+      "Moon": "Emotional weather",
+      "Mercury": "Decision window",
+      "Venus": "Connection and value",
+      "Mars": "Momentum shift",
+      "Jupiter": "Expansion opportunity",
+      "Saturn": "Maturity checkpoint",
+      "Uranus": "Breakthrough period",
+      "Neptune": "Spiritual reorientation",
+      "Pluto": "Deep transformation"
+    },
+    "aspectModifiers": {
+      "Conjunction": "New phase of",
+      "Sextile": "Opportunity for",
+      "Square": "Turning point in",
+      "Trine": "Flow around",
+      "Opposition": "Rebalancing"
+    },
+    "combinations": {
+      "Sun": {
+        "Sun": "New phase of identity",
+        "Moon": "Emotional clarity",
+        "Mercury": "Clearer self-expression",
+        "Venus": "Relationship spotlight",
+        "Mars": "Confidence and action",
+        "Jupiter": "Purpose expansion",
+        "Saturn": "New phase of career"
+      },
+      "Moon": {
+        "Sun": "Mood around identity",
+        "Moon": "Emotional reset",
+        "Mercury": "Feelings into words",
+        "Venus": "Needs in relationships",
+        "Mars": "Emotional reactivity",
+        "Jupiter": "Hope and belonging",
+        "Saturn": "Emotional boundaries"
+      },
+      "Mercury": {
+        "Sun": "Identity conversation",
+        "Moon": "Family or memory review",
+        "Mercury": "Mindset shift",
+        "Venus": "Relationship conversation",
+        "Mars": "Decision and debate",
+        "Jupiter": "Learning opportunity",
+        "Saturn": "Planning and commitments"
+      },
+      "Venus": {
+        "Sun": "Self-worth upgrade",
+        "Moon": "Softening emotional needs",
+        "Mercury": "Heartfelt communication",
+        "Venus": "Relationships evolution",
+        "Mars": "Attraction and desire",
+        "Jupiter": "Pleasure and abundance",
+        "Saturn": "Commitment in love or money"
+      },
+      "Mars": {
+        "Sun": "Bold identity move",
+        "Moon": "Emotional courage",
+        "Mercury": "Direct communication",
+        "Venus": "Relationship tension or chemistry",
+        "Mars": "Energy and motivation surge",
+        "Jupiter": "Ambitious growth",
+        "Saturn": "Disciplined effort"
+      },
+      "Jupiter": {
+        "Sun": "Purpose expansion",
+        "Moon": "Emotional growth",
+        "Mercury": "Big-picture learning",
+        "Venus": "Relationship and value growth",
+        "Mars": "Courage for a bigger goal",
+        "Jupiter": "New growth cycle",
+        "Saturn": "Career growth with structure"
+      },
+      "Saturn": {
+        "Sun": "Purpose and career checkpoint",
+        "Moon": "Emotional maturity",
+        "Mercury": "Serious decisions",
+        "Venus": "Relationship commitment test",
+        "Mars": "Disciplined action",
+        "Jupiter": "Sustainable expansion",
+        "Saturn": "New phase of career"
+      },
+      "Uranus": {
+        "Sun": "Identity breakthrough",
+        "Moon": "Emotional liberation",
+        "Mercury": "New thinking pattern",
+        "Venus": "Relationship reinvention",
+        "Mars": "Sudden action shift",
+        "Jupiter": "Future vision opening",
+        "Saturn": "Breaking old career structures"
+      },
+      "Neptune": {
+        "Sun": "Spiritual identity shift",
+        "Moon": "Sensitivity and healing",
+        "Mercury": "Imagination and uncertainty",
+        "Venus": "Romantic idealization",
+        "Mars": "Energy redirection",
+        "Jupiter": "Faith and meaning expansion",
+        "Saturn": "Dissolving old obligations"
+      },
+      "Pluto": {
+        "Sun": "Deep identity transformation",
+        "Moon": "Emotional shadow work",
+        "Mercury": "Powerful mental reset",
+        "Venus": "Relationship transformation",
+        "Mars": "Power and desire shift",
+        "Jupiter": "Belief system transformation",
+        "Saturn": "Career and life structure rebirth"
+      }
+    }
+  },
   "comboTemplates": {
     "Sun": {
       "Sun": {
