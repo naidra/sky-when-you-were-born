@@ -1,0 +1,704 @@
+{
+  "sourceNote": "Local transit interpretation atlas. Current geocentric planet positions are calculated with astronomy-engine and compared to natal placements using ecliptic longitude aspects. The structure is informed by Swiss Ephemeris-style position/speed fields, Astrolog-style aspect/orb tables and transit exactness workflows, and Flatlib-style chart objects.",
+  "calculationModel": {
+    "coordinateSystem": "Tropical zodiac, geocentric apparent ecliptic longitude",
+    "positionFields": ["body", "sign", "degree", "longitude"],
+    "futureUsefulFields": ["latitude", "distanceAu", "longitudeSpeedDegPerDay", "isRetrograde"],
+    "transitComparison": "Current planet longitude compared to natal planet longitude",
+    "ranking": "Active transits are sorted by exactness, then by smallest orb.",
+    "notes": [
+      "Swiss Ephemeris APIs commonly expose longitude, latitude, distance and speed; negative longitude speed is the usual indicator of apparent retrograde motion.",
+      "Astrolog-style transit workflows emphasize exactness over time, aspect lists, configurable aspect slots and configurable orbs.",
+      "Flatlib models a chart as a set of named objects with zodiac sign, degree and motion data, which fits this JSON schema."
+    ]
+  },
+  "aspectSets": {
+    "major": ["Conjunction", "Sextile", "Square", "Trine", "Opposition"],
+    "minorAvailableForFutureUse": [
+      "SemiSextile",
+      "SemiSquare",
+      "Quintile",
+      "Sesquiquadrate",
+      "BiQuintile",
+      "Quincunx"
+    ],
+    "verticalAvailableForFutureUse": ["Parallel", "ContraParallel"]
+  },
+  "orbDegrees": {
+    "Conjunction": 5,
+    "Sextile": 3,
+    "Square": 4,
+    "Trine": 4,
+    "Opposition": 5
+  },
+  "minorOrbDegrees": {
+    "SemiSextile": 2,
+    "SemiSquare": 2,
+    "Quintile": 1.5,
+    "Sesquiquadrate": 2,
+    "BiQuintile": 1.5,
+    "Quincunx": 2.5
+  },
+  "motionStates": {
+    "direct": {
+      "meaning": "The planet's symbolism tends to move outward, forward and visibly.",
+      "display": "Direct"
+    },
+    "retrograde": {
+      "meaning": "The planet's symbolism tends to turn inward, revisit unfinished material and work less linearly.",
+      "display": "Retrograde"
+    },
+    "stationing": {
+      "meaning": "The planet is near a change of direction, so its symbolism can feel louder, suspended or concentrated.",
+      "display": "Stationing"
+    },
+    "swift": {
+      "meaning": "The planet is moving faster than usual, so events can develop quickly and with less time for digestion.",
+      "display": "Swift"
+    },
+    "slow": {
+      "meaning": "The planet is moving slower than usual, so the transit may feel drawn out, deliberate or repetitive.",
+      "display": "Slow"
+    }
+  },
+  "aspects": {
+    "Conjunction": {
+      "angle": 0,
+      "family": "major",
+      "glyph": "☌",
+      "tone": "fusion",
+      "tempo": "immediate",
+      "summary": "The transit planet is activating the natal point directly, making this theme hard to ignore.",
+      "prompt": "Use the intensity consciously; it wants embodiment, not avoidance.",
+      "keywords": ["activation", "merging", "initiation", "visibility"],
+      "constructiveUse": "Start a new cycle around the natal topic and name what is demanding attention.",
+      "shadow": "Over-identifying with the transit can make one temporary weather pattern feel like the whole self."
+    },
+    "Sextile": {
+      "angle": 60,
+      "family": "major",
+      "glyph": "✶",
+      "tone": "opportunity",
+      "tempo": "workable",
+      "summary": "This transit opens a cooperative window where effort tends to meet less resistance.",
+      "prompt": "Take the invitation while it is available; small actions can compound.",
+      "keywords": ["choice", "support", "skill", "opening"],
+      "constructiveUse": "Make a practical move, send the message, schedule the meeting or practice the craft.",
+      "shadow": "Sextiles are easy to miss when you wait for life to push you."
+    },
+    "Square": {
+      "angle": 90,
+      "family": "major",
+      "glyph": "□",
+      "tone": "friction",
+      "tempo": "pressurized",
+      "summary": "This transit creates pressure that exposes what needs adjustment, courage, or a cleaner boundary.",
+      "prompt": "Treat tension as information rather than proof that something is wrong.",
+      "keywords": ["conflict", "growth", "decision", "effort"],
+      "constructiveUse": "Clarify the problem, choose the next concrete action and stop feeding avoidable tension.",
+      "shadow": "Reacting too fast can turn a growth challenge into a fight with the wrong target."
+    },
+    "Trine": {
+      "angle": 120,
+      "family": "major",
+      "glyph": "△",
+      "tone": "flow",
+      "tempo": "integrating",
+      "summary": "This transit supports ease, talent, and integration around the natal theme it touches.",
+      "prompt": "Do not let ease become passivity; use the flow deliberately.",
+      "keywords": ["ease", "talent", "confidence", "integration"],
+      "constructiveUse": "Build on what is already working and let natural confidence carry a useful action.",
+      "shadow": "The gift can stay invisible if it is treated as ordinary and left unused."
+    },
+    "Opposition": {
+      "angle": 180,
+      "family": "major",
+      "glyph": "☍",
+      "tone": "reflection",
+      "tempo": "relational",
+      "summary": "This transit brings contrast through other people, circumstances, or inner polarization.",
+      "prompt": "Look for the mirror; the lesson is often in the relationship between two needs.",
+      "keywords": ["mirror", "contrast", "culmination", "negotiation"],
+      "constructiveUse": "Seek perspective, name the polarity and avoid making the other side carry the whole problem.",
+      "shadow": "Projection can make the transit look like it belongs only to someone else."
+    }
+  },
+  "minorAspects": {
+    "SemiSextile": {
+      "angle": 30,
+      "tone": "adjustment",
+      "summary": "Adjacent topics ask to be coordinated, even if they do not naturally speak the same language."
+    },
+    "SemiSquare": {
+      "angle": 45,
+      "tone": "irritation",
+      "summary": "A small but persistent tension pushes for a practical correction."
+    },
+    "Quintile": {
+      "angle": 72,
+      "tone": "creative pattern",
+      "summary": "A specialized talent, design instinct or unusual solution may be available."
+    },
+    "Sesquiquadrate": {
+      "angle": 135,
+      "tone": "escalating friction",
+      "summary": "A recurring irritation asks for maturity before it becomes a larger conflict."
+    },
+    "BiQuintile": {
+      "angle": 144,
+      "tone": "refined creativity",
+      "summary": "A subtle gift can become useful when shaped with intention."
+    },
+    "Quincunx": {
+      "angle": 150,
+      "tone": "recalibration",
+      "summary": "Two parts of life need adjustment because they do not share an obvious rhythm."
+    }
+  },
+  "transitPlanets": {
+    "Sun": {
+      "theme": "visibility, vitality, and focus",
+      "summary": "The Sun highlights what needs recognition and conscious direction.",
+      "cycleSpeed": "fast",
+      "typicalTransitDuration": "hours to a few days",
+      "keywords": ["attention", "identity", "leadership", "vitality"],
+      "bestUse": "Choose where to place attention and make the important thing visible.",
+      "watchFor": "Ego reactivity or needing validation before acting."
+    },
+    "Moon": {
+      "theme": "mood, instinct, and immediate emotional weather",
+      "summary": "The Moon makes the transit personal, temporary, and emotionally noticeable.",
+      "cycleSpeed": "very fast",
+      "typicalTransitDuration": "hours",
+      "keywords": ["feeling", "memory", "body", "belonging"],
+      "bestUse": "Notice the feeling without making it permanent.",
+      "watchFor": "Confusing a passing mood with a final truth."
+    },
+    "Mercury": {
+      "theme": "thought, language, planning, and information",
+      "summary": "Mercury asks for naming, sorting, conversation, and mental flexibility.",
+      "cycleSpeed": "fast",
+      "typicalTransitDuration": "days",
+      "keywords": ["messages", "analysis", "learning", "choice"],
+      "bestUse": "Write it down, ask the question, compare the data and refine the plan.",
+      "watchFor": "Overexplaining, nervous speed or clever avoidance."
+    },
+    "Venus": {
+      "theme": "affection, beauty, pleasure, money, and relating",
+      "summary": "Venus softens the field and asks what feels attractive, fair, or worth choosing.",
+      "cycleSpeed": "fast to medium",
+      "typicalTransitDuration": "days to a week",
+      "keywords": ["attraction", "values", "harmony", "pleasure"],
+      "bestUse": "Choose what is genuinely valuable, beautiful or relationally kind.",
+      "watchFor": "Pleasant avoidance, people-pleasing or buying comfort instead of naming need."
+    },
+    "Mars": {
+      "theme": "desire, conflict, heat, courage, and action",
+      "summary": "Mars adds urgency and shows where direct movement is needed.",
+      "cycleSpeed": "medium",
+      "typicalTransitDuration": "several days to two weeks",
+      "keywords": ["drive", "anger", "pursuit", "heat"],
+      "bestUse": "Move decisively, exercise agency and handle conflict cleanly.",
+      "watchFor": "Impulsiveness, blame or pushing before the direction is clear."
+    },
+    "Jupiter": {
+      "theme": "growth, faith, confidence, travel, and meaning",
+      "summary": "Jupiter expands the natal topic and asks for a larger frame.",
+      "cycleSpeed": "slow",
+      "typicalTransitDuration": "weeks to months",
+      "keywords": ["expansion", "belief", "generosity", "teaching"],
+      "bestUse": "Say yes to the opportunity that enlarges your life without abandoning judgment.",
+      "watchFor": "Overpromising, excess or assuming optimism is a plan."
+    },
+    "Saturn": {
+      "theme": "structure, limits, responsibility, time, and mastery",
+      "summary": "Saturn tests what is durable and asks for patience, realism, and commitment.",
+      "cycleSpeed": "slow",
+      "typicalTransitDuration": "months",
+      "keywords": ["discipline", "limits", "maturity", "accountability"],
+      "bestUse": "Build the structure, make the boundary and do the work that will still matter later.",
+      "watchFor": "Fear, rigidity or mistaking delay for denial."
+    },
+    "Uranus": {
+      "theme": "change, freedom, disruption, invention, and awakening",
+      "summary": "Uranus shakes loose stale patterns and asks for more room to be honest.",
+      "cycleSpeed": "very slow",
+      "typicalTransitDuration": "months to years",
+      "keywords": ["liberation", "surprise", "innovation", "breakthrough"],
+      "bestUse": "Experiment intelligently and create space for the truth that no longer fits the old pattern.",
+      "watchFor": "Rebellion for its own sake or burning down what only needed redesign."
+    },
+    "Neptune": {
+      "theme": "imagination, sensitivity, longing, spirituality, and uncertainty",
+      "summary": "Neptune dissolves hard edges and asks for discernment inside inspiration.",
+      "cycleSpeed": "very slow",
+      "typicalTransitDuration": "months to years",
+      "keywords": ["dream", "surrender", "compassion", "fog"],
+      "bestUse": "Make room for art, prayer, rest and subtle perception while checking facts gently.",
+      "watchFor": "Idealization, confusion, escapism or porous boundaries."
+    },
+    "Pluto": {
+      "theme": "power, depth, compulsion, endings, and regeneration",
+      "summary": "Pluto intensifies the natal topic and asks for truth below the surface.",
+      "cycleSpeed": "extremely slow",
+      "typicalTransitDuration": "years",
+      "keywords": ["transformation", "power", "shadow", "release"],
+      "bestUse": "Let what is false, exhausted or controlling be metabolized into a more honest form.",
+      "watchFor": "Obsession, coercion or trying to control the uncontrollable."
+    }
+  },
+  "natalBodies": {
+    "Sun": {
+      "theme": "identity, confidence, purpose, and life direction",
+      "question": "What part of me is trying to become more conscious?"
+    },
+    "Moon": {
+      "theme": "emotional needs, memory, family patterns, and inner safety",
+      "question": "What feeling or need is asking to be protected rather than judged?"
+    },
+    "Mercury": {
+      "theme": "voice, perception, learning style, and daily decisions",
+      "question": "What needs to be named, learned, questioned or communicated?"
+    },
+    "Venus": {
+      "theme": "love language, values, aesthetics, money, and attraction",
+      "question": "What do I actually value, and what kind of reciprocity am I choosing?"
+    },
+    "Mars": {
+      "theme": "drive, anger, sexuality, assertion, and pursuit",
+      "question": "Where do I need cleaner courage or more honest desire?"
+    },
+    "Jupiter": {
+      "theme": "belief, optimism, appetite for growth, and generosity",
+      "question": "What larger possibility is calling, and what wisdom should guide it?"
+    },
+    "Saturn": {
+      "theme": "discipline, fear, responsibility, ambition, and boundaries",
+      "question": "What structure, limit or commitment would make this more real?"
+    }
+  },
+  "lifeThemeRules": {
+    "natalBodies": {
+      "Sun": "Life direction",
+      "Moon": "Emotional reset",
+      "Mercury": "Mindset shift",
+      "Venus": "Relationships evolution",
+      "Mars": "Action and courage",
+      "Jupiter": "Growth chapter",
+      "Saturn": "Career and responsibility"
+    },
+    "transitPlanets": {
+      "Sun": "Spotlight moment",
+      "Moon": "Emotional weather",
+      "Mercury": "Decision window",
+      "Venus": "Connection and value",
+      "Mars": "Momentum shift",
+      "Jupiter": "Expansion opportunity",
+      "Saturn": "Maturity checkpoint",
+      "Uranus": "Breakthrough period",
+      "Neptune": "Spiritual reorientation",
+      "Pluto": "Deep transformation"
+    },
+    "aspectModifiers": {
+      "Conjunction": "New phase of",
+      "Sextile": "Opportunity for",
+      "Square": "Turning point in",
+      "Trine": "Flow around",
+      "Opposition": "Rebalancing"
+    },
+    "combinations": {
+      "Sun": {
+        "Sun": "New phase of identity",
+        "Moon": "Emotional clarity",
+        "Mercury": "Clearer self-expression",
+        "Venus": "Relationship spotlight",
+        "Mars": "Confidence and action",
+        "Jupiter": "Purpose expansion",
+        "Saturn": "New phase of career"
+      },
+      "Moon": {
+        "Sun": "Mood around identity",
+        "Moon": "Emotional reset",
+        "Mercury": "Feelings into words",
+        "Venus": "Needs in relationships",
+        "Mars": "Emotional reactivity",
+        "Jupiter": "Hope and belonging",
+        "Saturn": "Emotional boundaries"
+      },
+      "Mercury": {
+        "Sun": "Identity conversation",
+        "Moon": "Family or memory review",
+        "Mercury": "Mindset shift",
+        "Venus": "Relationship conversation",
+        "Mars": "Decision and debate",
+        "Jupiter": "Learning opportunity",
+        "Saturn": "Planning and commitments"
+      },
+      "Venus": {
+        "Sun": "Self-worth upgrade",
+        "Moon": "Softening emotional needs",
+        "Mercury": "Heartfelt communication",
+        "Venus": "Relationships evolution",
+        "Mars": "Attraction and desire",
+        "Jupiter": "Pleasure and abundance",
+        "Saturn": "Commitment in love or money"
+      },
+      "Mars": {
+        "Sun": "Bold identity move",
+        "Moon": "Emotional courage",
+        "Mercury": "Direct communication",
+        "Venus": "Relationship tension or chemistry",
+        "Mars": "Energy and motivation surge",
+        "Jupiter": "Ambitious growth",
+        "Saturn": "Disciplined effort"
+      },
+      "Jupiter": {
+        "Sun": "Purpose expansion",
+        "Moon": "Emotional growth",
+        "Mercury": "Big-picture learning",
+        "Venus": "Relationship and value growth",
+        "Mars": "Courage for a bigger goal",
+        "Jupiter": "New growth cycle",
+        "Saturn": "Career growth with structure"
+      },
+      "Saturn": {
+        "Sun": "Purpose and career checkpoint",
+        "Moon": "Emotional maturity",
+        "Mercury": "Serious decisions",
+        "Venus": "Relationship commitment test",
+        "Mars": "Disciplined action",
+        "Jupiter": "Sustainable expansion",
+        "Saturn": "New phase of career"
+      },
+      "Uranus": {
+        "Sun": "Identity breakthrough",
+        "Moon": "Emotional liberation",
+        "Mercury": "New thinking pattern",
+        "Venus": "Relationship reinvention",
+        "Mars": "Sudden action shift",
+        "Jupiter": "Future vision opening",
+        "Saturn": "Breaking old career structures"
+      },
+      "Neptune": {
+        "Sun": "Spiritual identity shift",
+        "Moon": "Sensitivity and healing",
+        "Mercury": "Imagination and uncertainty",
+        "Venus": "Romantic idealization",
+        "Mars": "Energy redirection",
+        "Jupiter": "Faith and meaning expansion",
+        "Saturn": "Dissolving old obligations"
+      },
+      "Pluto": {
+        "Sun": "Deep identity transformation",
+        "Moon": "Emotional shadow work",
+        "Mercury": "Powerful mental reset",
+        "Venus": "Relationship transformation",
+        "Mars": "Power and desire shift",
+        "Jupiter": "Belief system transformation",
+        "Saturn": "Career and life structure rebirth"
+      }
+    }
+  },
+  "comboTemplates": {
+    "Sun": {
+      "Sun": {
+        "focus": "identity renewal",
+        "guidance": "Let this transit clarify what deserves your attention and what no longer reflects your direction."
+      },
+      "Moon": {
+        "focus": "emotional visibility",
+        "guidance": "Private needs may become visible; respond with warmth instead of performance."
+      },
+      "Mercury": {
+        "focus": "clear expression",
+        "guidance": "Speak plainly and let your decisions reflect what you actually mean."
+      },
+      "Venus": {
+        "focus": "chosen value",
+        "guidance": "Notice where pleasure, beauty or affection wants more conscious participation."
+      },
+      "Mars": {
+        "focus": "direct action",
+        "guidance": "Use energy deliberately; confidence works best when paired with aim."
+      },
+      "Jupiter": {
+        "focus": "meaningful expansion",
+        "guidance": "Let optimism point toward a larger purpose, not just a larger appetite."
+      },
+      "Saturn": {
+        "focus": "mature purpose",
+        "guidance": "A serious obligation can become a source of self-respect when accepted consciously."
+      }
+    },
+    "Moon": {
+      "Sun": {
+        "focus": "felt identity",
+        "guidance": "The body may know something before the mind has language for it."
+      },
+      "Moon": {
+        "focus": "emotional tide",
+        "guidance": "Treat the mood as weather: real, informative and temporary."
+      },
+      "Mercury": {
+        "focus": "emotional language",
+        "guidance": "Name the feeling simply before trying to explain it perfectly."
+      },
+      "Venus": {
+        "focus": "comfort and attachment",
+        "guidance": "Let tenderness guide the choice, but do not confuse comfort with truth."
+      },
+      "Mars": {
+        "focus": "reactivity",
+        "guidance": "Pause before acting from a feeling that only needs acknowledgement."
+      },
+      "Jupiter": {
+        "focus": "generous feeling",
+        "guidance": "Emotional openness can become wisdom when grounded in proportion."
+      },
+      "Saturn": {
+        "focus": "emotional boundary",
+        "guidance": "Care may require containment, rest or a firmer limit."
+      }
+    },
+    "Mercury": {
+      "Sun": {
+        "focus": "self-definition",
+        "guidance": "A conversation, idea or decision can sharpen your sense of direction."
+      },
+      "Moon": {
+        "focus": "memory and meaning",
+        "guidance": "Old feelings may need new words."
+      },
+      "Mercury": {
+        "focus": "mental reset",
+        "guidance": "Revise the plan, update the story and check assumptions."
+      },
+      "Venus": {
+        "focus": "relational communication",
+        "guidance": "Say what would make connection fairer, kinder or more beautiful."
+      },
+      "Mars": {
+        "focus": "decisive words",
+        "guidance": "Use direct language without turning sharpness into injury."
+      },
+      "Jupiter": {
+        "focus": "big-picture thinking",
+        "guidance": "Let curiosity widen the map while facts keep the route usable."
+      },
+      "Saturn": {
+        "focus": "serious planning",
+        "guidance": "Edit, schedule, define terms and make the idea accountable."
+      }
+    },
+    "Venus": {
+      "Sun": {
+        "focus": "self-worth",
+        "guidance": "Let affection and beauty remind you what kind of life you want to inhabit."
+      },
+      "Moon": {
+        "focus": "softening",
+        "guidance": "Comfort can be medicinal when it does not become avoidance."
+      },
+      "Mercury": {
+        "focus": "graceful speech",
+        "guidance": "A kind message may go farther than a perfect argument."
+      },
+      "Venus": {
+        "focus": "values audit",
+        "guidance": "Notice what you are drawn toward and whether it reflects your real values."
+      },
+      "Mars": {
+        "focus": "desire and attraction",
+        "guidance": "Chemistry needs consent, clarity and mutuality to become nourishing."
+      },
+      "Jupiter": {
+        "focus": "pleasure and generosity",
+        "guidance": "Enjoy expansion without spending tomorrow's energy too casually."
+      },
+      "Saturn": {
+        "focus": "committed value",
+        "guidance": "Love, art or money may ask for more maturity and better agreements."
+      }
+    },
+    "Mars": {
+      "Sun": {
+        "focus": "assertive identity",
+        "guidance": "Act for yourself without needing every action to become a contest."
+      },
+      "Moon": {
+        "focus": "heated feelings",
+        "guidance": "Anger may be protecting a need; find the need before choosing the move."
+      },
+      "Mercury": {
+        "focus": "argument and decision",
+        "guidance": "Be direct, but let precision replace combat."
+      },
+      "Venus": {
+        "focus": "pursuit",
+        "guidance": "Desire becomes cleaner when it respects timing and reciprocity."
+      },
+      "Mars": {
+        "focus": "energy surge",
+        "guidance": "Move your body, choose the target and do not waste force on noise."
+      },
+      "Jupiter": {
+        "focus": "bold expansion",
+        "guidance": "Courage is useful; overreach is expensive."
+      },
+      "Saturn": {
+        "focus": "disciplined action",
+        "guidance": "Resistance can teach technique if you do not turn it into resentment."
+      }
+    },
+    "Jupiter": {
+      "Sun": {
+        "focus": "confidence and purpose",
+        "guidance": "Growth is available when the vision is honest and not merely inflated."
+      },
+      "Moon": {
+        "focus": "emotional abundance",
+        "guidance": "Let support in, but keep enough proportion to hear quieter needs."
+      },
+      "Mercury": {
+        "focus": "learning and perspective",
+        "guidance": "This is a strong window for study, teaching, travel planning or reframing the story."
+      },
+      "Venus": {
+        "focus": "generous love",
+        "guidance": "Pleasure expands; choose quality over excess."
+      },
+      "Mars": {
+        "focus": "ambitious action",
+        "guidance": "A larger goal can energize you, but it still needs pacing."
+      },
+      "Jupiter": {
+        "focus": "belief cycle",
+        "guidance": "Revisit what you trust, what you teach and what future you are growing toward."
+      },
+      "Saturn": {
+        "focus": "growth versus structure",
+        "guidance": "Expansion works best when paired with a container that can hold it."
+      }
+    },
+    "Saturn": {
+      "Sun": {
+        "focus": "identity test",
+        "guidance": "A serious chapter can clarify what you are willing to stand for."
+      },
+      "Moon": {
+        "focus": "emotional maturity",
+        "guidance": "Tenderness may need structure, solitude or more reliable support."
+      },
+      "Mercury": {
+        "focus": "mental discipline",
+        "guidance": "Slow thinking can become strong thinking; define the terms."
+      },
+      "Venus": {
+        "focus": "relational accountability",
+        "guidance": "What is real in love, money or art will benefit from clearer agreements."
+      },
+      "Mars": {
+        "focus": "controlled effort",
+        "guidance": "Frustration can become mastery when energy is trained instead of suppressed."
+      },
+      "Jupiter": {
+        "focus": "realistic growth",
+        "guidance": "A big promise needs proof, patience and a plan."
+      },
+      "Saturn": {
+        "focus": "life structure",
+        "guidance": "This transit asks what responsibilities are truly yours and how you want to carry them."
+      }
+    },
+    "Uranus": {
+      "Sun": {
+        "focus": "awakening identity",
+        "guidance": "A freer version of yourself may disrupt an older role."
+      },
+      "Moon": {
+        "focus": "emotional liberation",
+        "guidance": "Old attachment patterns may need more space, experimentation or honesty."
+      },
+      "Mercury": {
+        "focus": "breakthrough thinking",
+        "guidance": "Let the unusual idea arrive, then test how it can be made useful."
+      },
+      "Venus": {
+        "focus": "unconventional value",
+        "guidance": "Attraction may change when authenticity becomes non-negotiable."
+      },
+      "Mars": {
+        "focus": "liberated action",
+        "guidance": "Move differently, but avoid confusing speed with freedom."
+      },
+      "Jupiter": {
+        "focus": "radical possibility",
+        "guidance": "A new future opens when belief detaches from the old map."
+      },
+      "Saturn": {
+        "focus": "breaking old structures",
+        "guidance": "Redesign the rule before the rule breaks you."
+      }
+    },
+    "Neptune": {
+      "Sun": {
+        "focus": "porous identity",
+        "guidance": "Let inspiration soften the ego while keeping one hand on reality."
+      },
+      "Moon": {
+        "focus": "psychic sensitivity",
+        "guidance": "Compassion is high; boundaries make it usable."
+      },
+      "Mercury": {
+        "focus": "imaginative mind",
+        "guidance": "Great for poetry, prayer and symbolism; double-check logistics."
+      },
+      "Venus": {
+        "focus": "idealized love",
+        "guidance": "Beauty may feel transcendent, but clarity protects the heart."
+      },
+      "Mars": {
+        "focus": "diffused drive",
+        "guidance": "Act from inspiration, not confusion or rescue fantasies."
+      },
+      "Jupiter": {
+        "focus": "spiritual expansion",
+        "guidance": "Faith grows, but discernment keeps it from becoming fantasy."
+      },
+      "Saturn": {
+        "focus": "dissolving structure",
+        "guidance": "Some old certainty may soften; replace denial with compassionate realism."
+      }
+    },
+    "Pluto": {
+      "Sun": {
+        "focus": "identity transformation",
+        "guidance": "Powerful self-redefinition is possible when you stop bargaining with what is finished."
+      },
+      "Moon": {
+        "focus": "deep emotional purge",
+        "guidance": "Old survival patterns may surface so they can finally be metabolized."
+      },
+      "Mercury": {
+        "focus": "obsessive insight",
+        "guidance": "Investigate deeply, but do not let the mind become a locked room."
+      },
+      "Venus": {
+        "focus": "intense value and attachment",
+        "guidance": "Love and money themes may reveal where control has replaced trust."
+      },
+      "Mars": {
+        "focus": "raw power",
+        "guidance": "Use force with integrity; compulsion is asking to be transformed."
+      },
+      "Jupiter": {
+        "focus": "belief transformation",
+        "guidance": "A worldview may intensify or die back so a truer one can emerge."
+      },
+      "Saturn": {
+        "focus": "structural regeneration",
+        "guidance": "A long-standing responsibility, fear or ambition may need profound renovation."
+      }
+    }
+  }
+}
