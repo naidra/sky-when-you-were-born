@@ -31,9 +31,33 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
+function parseDateTime(dateStr: string, timeStr: string): Date | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr) || !/^\d{2}:\d{2}$/.test(timeStr)) {
+    return null;
+  }
+
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const [hh, mm] = timeStr.split(":").map(Number);
+  const date = new Date(y, m - 1, d, hh, mm);
+
+  if (
+    date.getFullYear() !== y ||
+    date.getMonth() !== m - 1 ||
+    date.getDate() !== d ||
+    date.getHours() !== hh ||
+    date.getMinutes() !== mm
+  ) {
+    return null;
+  }
+
+  return date;
+}
+
 // Build a UTC Date from local date/time + IANA tz, using Intl trick.
-function localToUTC(dateStr: string, timeStr: string, tz: string): Date {
-  // dateStr: yyyy-mm-dd, timeStr: HH:mm
+function localToUTC(dateStr: string, timeStr: string, tz: string): Date | null {
+  const localDate = parseDateTime(dateStr, timeStr);
+  if (!localDate) return null;
+
   const [y, m, d] = dateStr.split("-").map(Number);
   const [hh, mm] = timeStr.split(":").map(Number);
   // Initial guess: treat as UTC, then correct by tz offset at that instant.
@@ -184,25 +208,27 @@ function Index() {
   }, [country, stateObj, cityRow]);
 
   const utcDate = useMemo(() => localToUTC(dateStr, timeStr, city.tz), [dateStr, timeStr, city.tz]);
-  const localDate = useMemo(() => {
-    const [y, m, d] = dateStr.split("-").map(Number);
-    const [hh, mm] = timeStr.split(":").map(Number);
-    return new Date(y, m - 1, d, hh, mm);
-  }, [dateStr, timeStr]);
+  const localDate = useMemo(() => parseDateTime(dateStr, timeStr), [dateStr, timeStr]);
+  const dateError = !localDate ? "Enter a valid calendar date and time." : null;
 
-  const input: SkyInputs = useMemo(
-    () => ({ date: utcDate, lat: city.lat, lon: city.lon }),
+  const input: SkyInputs | null = useMemo(
+    () => (utcDate ? { date: utcDate, lat: city.lat, lon: city.lon } : null),
     [utcDate, city.lat, city.lon],
   );
 
-  const moon = useMemo(() => computeMoon(input), [input]);
-  const planets = useMemo(() => computePlanets(input), [input]);
-  const sun = useMemo(() => computeSun(input), [input]);
-  const visibleStars = useMemo(() => computeStars(input).filter((s) => s.alt > 0).length, [input]);
+  const moon = useMemo(() => (input ? computeMoon(input) : null), [input]);
+  const planets = useMemo(() => (input ? computePlanets(input) : []), [input]);
+  const sun = useMemo(() => (input ? computeSun(input) : null), [input]);
+  const visibleStars = useMemo(
+    () => (input ? computeStars(input).filter((s) => s.alt > 0).length : 0),
+    [input],
+  );
   const personalityReport = useMemo(
     () =>
-      personalityAtlas ? createPersonalityReport(input, moon.phaseName, personalityAtlas) : null,
-    [input, moon.phaseName, personalityAtlas],
+      input && moon && personalityAtlas
+        ? createPersonalityReport(input, moon.phaseName, personalityAtlas)
+        : null,
+    [input, moon, personalityAtlas],
   );
   const transitReport = useMemo(
     () =>
@@ -215,7 +241,7 @@ function Index() {
   const shareRef = useRef<HTMLDivElement>(null);
 
   const handleShare = async () => {
-    if (!shareRef.current) return;
+    if (!shareRef.current || !input || !localDate) return;
     try {
       const dataUrl = await toPng(shareRef.current, { pixelRatio: 2, cacheBust: true });
       const link = document.createElement("a");
@@ -335,6 +361,7 @@ function Index() {
               value={dateStr}
               onChange={(e) => setDateStr(e.target.value)}
               className="mt-1 w-full bg-input border border-border rounded-md px-3 py-2 text-foreground font-sans text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring [color-scheme:light] dark:[color-scheme:dark]"
+              aria-invalid={!!dateError}
             />
           </label>
 
@@ -347,20 +374,27 @@ function Index() {
               value={timeStr}
               onChange={(e) => setTimeStr(e.target.value)}
               className="mt-1 w-full bg-input border border-border rounded-md px-3 py-2 text-foreground font-sans text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring [color-scheme:light] dark:[color-scheme:dark]"
+              aria-invalid={!!dateError}
             />
           </label>
+
+          {dateError && (
+            <p className="-mt-4 mb-6 rounded-md border border-border bg-secondary/70 px-3 py-2 font-sans text-sm text-muted-foreground">
+              {dateError}
+            </p>
+          )}
 
           <div className="border-t border-border pt-4 space-y-3">
             <div className="flex items-center justify-between">
               <span className="font-sans text-muted-foreground text-sm">Sunrise</span>
               <span className="font-sans font-semibold text-gold-bright text-sm">
-                {formatTime(sun.rise)}
+                {formatTime(sun?.rise ?? null)}
               </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="font-sans text-muted-foreground text-sm">Sunset</span>
               <span className="font-sans font-semibold text-gold-bright text-sm">
-                {formatTime(sun.set)}
+                {formatTime(sun?.set ?? null)}
               </span>
             </div>
             <div className="flex items-center justify-between">
@@ -372,14 +406,15 @@ function Index() {
             <div className="flex items-center justify-between">
               <span className="font-sans text-muted-foreground text-sm">Moon altitude</span>
               <span className="font-sans font-semibold text-gold-bright text-sm">
-                {moon.alt > 0 ? `${moon.alt.toFixed(1)}° up` : "below horizon"}
+                {moon ? (moon.alt > 0 ? `${moon.alt.toFixed(1)}° up` : "below horizon") : "—"}
               </span>
             </div>
           </div>
 
           <button
             onClick={handleShare}
-            className="mt-6 w-full font-sans font-semibold uppercase tracking-[0.12em] text-xs py-3 rounded-md bg-primary text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring"
+            disabled={!input || !localDate}
+            className="mt-6 w-full font-sans font-semibold uppercase tracking-[0.12em] text-xs py-3 rounded-md bg-primary text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-60"
           >
             DOWNLOAD SHAREABLE CARD
           </button>
@@ -391,21 +426,38 @@ function Index() {
             className="ornate-border sky-frame rounded-full mx-auto p-3 bg-night"
             style={{ width: "fit-content" }}
           >
-            <StarMap input={input} size={560} ornate showLabels />
+            {input ? (
+              <StarMap input={input} size={560} ornate showLabels />
+            ) : (
+              <div className="grid size-[min(560px,calc(100vw-4rem))] place-items-center rounded-full border border-gold/25 bg-night px-10 text-center font-sans text-sm text-gold">
+                Enter a valid date to draw the sky.
+              </div>
+            )}
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
             {/* Moon panel */}
             <div className="ornate-border rounded-xl p-5 bg-card/85 flex items-center gap-4">
-              <MoonPhase phaseAngle={moon.phaseAngle} illumination={moon.illumination} size={88} />
+              {moon ? (
+                <MoonPhase
+                  phaseAngle={moon.phaseAngle}
+                  illumination={moon.illumination}
+                  size={88}
+                />
+              ) : (
+                <div className="size-[88px] shrink-0 rounded-full border border-border bg-secondary/50" />
+              )}
               <div>
                 <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em]">
                   MOON
                 </p>
-                <p className="font-display text-gold-bright text-xl mt-1">{moon.phaseName}</p>
+                <p className="font-display text-gold-bright text-xl mt-1">
+                  {moon?.phaseName ?? "Waiting for date"}
+                </p>
                 <p className="font-sans text-muted-foreground text-xs mt-1">
-                  {(moon.illumination * 100).toFixed(0)}% illuminated · phase{" "}
-                  {moon.phaseAngle.toFixed(0)}°
+                  {moon
+                    ? `${(moon.illumination * 100).toFixed(0)}% illuminated · phase ${moon.phaseAngle.toFixed(0)}°`
+                    : "Enter a valid calendar date and time."}
                 </p>
               </div>
             </div>
@@ -683,15 +735,19 @@ function Index() {
           </div>
 
           <p className="text-center font-serif italic text-muted-foreground text-sm">
-            {format(localDate, "MMMM d, yyyy 'at' HH:mm")} · {city.name}, {city.country}
+            {localDate
+              ? `${format(localDate, "MMMM d, yyyy 'at' HH:mm")} · ${city.name}, ${city.country}`
+              : `Choose a valid date · ${city.name}, ${city.country}`}
           </p>
         </section>
       </div>
 
       {/* Hidden share card for export */}
-      <div className="fixed -left-[9999px] top-0">
-        <ShareCard ref={shareRef} input={input} city={city} localDate={localDate} />
-      </div>
+      {input && localDate && (
+        <div className="fixed -left-[9999px] top-0">
+          <ShareCard ref={shareRef} input={input} city={city} localDate={localDate} />
+        </div>
+      )}
     </div>
   );
 }
