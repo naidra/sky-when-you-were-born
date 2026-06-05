@@ -7,6 +7,9 @@
     "dev": "vite dev",
     "build": "vite build",
     "build:dev": "vite build --mode development",
+    "postbuild": "node -e \"const fs=require('fs');fs.writeFileSync('dist/client/.nojekyll','');fs.copyFileSync('dist/client/index.html','dist/client/404.html');\"",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages --dotfiles -d dist/client",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write ."
@@ -79,6 +82,7 @@
     "eslint-plugin-prettier": "^5.2.6",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
+    "gh-pages": "^6.3.0",
     "globals": "^15.15.0",
     "nitro": "3.0.260429-beta",
     "prettier": "^3.7.3",

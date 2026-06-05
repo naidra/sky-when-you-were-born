@@ -543,7 +543,7 @@ function Index() {
             )}
           </div>
 
-          <div className="ornate-border rounded-xl bg-card/85">
+          <div className="hidden ornate-border rounded-xl bg-card/85">
             <button
               type="button"
               onClick={() => setShowTransitCalculator((current) => !current)}
