@@ -70,6 +70,10 @@ function getTzOffsetMinutes(date: Date, tz: string): number {
 
 type Theme = "light" | "dark";
 
+function publicAsset(path: string) {
+  return `${import.meta.env.BASE_URL}${path}`;
+}
+
 function getInitialTheme(): Theme {
   if (typeof window === "undefined") return "dark";
   const saved = window.localStorage.getItem("sky-theme");
@@ -109,7 +113,7 @@ function Index() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/world-cities.json")
+    fetch(publicAsset("world-cities.json"))
       .then((r) => r.json())
       .then((d: WorldCountry[]) => {
         if (!cancelled) setWorld(d);
@@ -122,7 +126,7 @@ function Index() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/personality-atlas.json")
+    fetch(publicAsset("personality-atlas.json"))
       .then((r) => r.json())
       .then((d: PersonalityAtlas) => {
         if (!cancelled) setPersonalityAtlas(d);
@@ -135,7 +139,7 @@ function Index() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/transit-interpretations.json")
+    fetch(publicAsset("transit-interpretations.json"))
       .then((r) => r.json())
       .then((d: TransitAtlas) => {
         if (!cancelled) setTransitAtlas(d);
