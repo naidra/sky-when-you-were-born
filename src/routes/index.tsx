@@ -6,6 +6,7 @@ import { ChevronDown, Moon, Sun } from "lucide-react";
 import { StarMap } from "@/components/StarMap";
 import { MoonPhase } from "@/components/MoonPhase";
 import { ShareCard } from "@/components/ShareCard";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { type City } from "@/lib/cities";
 import { createPersonalityReport, formatPlacement, type PersonalityAtlas } from "@/lib/personality";
 import { computeMoon, computePlanets, computeStars, computeSun, type SkyInputs } from "@/lib/sky";
@@ -108,6 +109,7 @@ function getInitialTheme(): Theme {
 function Index() {
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
   const [currentDate, setCurrentDate] = useState<Date | null>(null);
+  const [showPersonalityReport, setShowPersonalityReport] = useState(false);
   const [showTransitCalculator, setShowTransitCalculator] = useState(false);
   const [showCurrentPositions, setShowCurrentPositions] = useState(false);
   const [dateStr, setDateStr] = useState("1990-06-15");
@@ -484,120 +486,141 @@ function Index() {
             </div>
           </div>
 
-          <div className="ornate-border rounded-xl p-6 bg-card/85">
-            <div className="flex flex-col gap-2 border-b border-border pb-4 md:flex-row md:items-end md:justify-between">
-              <div>
-                <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em]">
-                  PERSONALITY REPORT
-                </p>
-                <h2 className="font-display text-gold-bright text-2xl mt-1">
-                  {personalityReport?.title ?? "Reading the sky..."}
-                </h2>
-              </div>
-              {personalityReport && (
-                <p className="font-sans font-semibold uppercase text-gold text-xs tracking-[0.16em]">
-                  {personalityReport.dominantElement} · {personalityReport.dominantModality}
+          <Collapsible
+            open={showPersonalityReport}
+            onOpenChange={setShowPersonalityReport}
+            className="ornate-border rounded-xl bg-card/85"
+          >
+            <CollapsibleTrigger asChild>
+              <button
+                type="button"
+                className={`flex w-full flex-col gap-3 p-6 text-left transition-colors hover:bg-secondary/35 focus:outline-none focus:ring-2 focus:ring-ring md:flex-row md:items-end md:justify-between ${
+                  showPersonalityReport ? "border-b border-border" : ""
+                }`}
+                aria-label={`${showPersonalityReport ? "Collapse" : "Expand"} personality report`}
+              >
+                <div>
+                  <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em]">
+                    PERSONALITY REPORT
+                  </p>
+                  <h2 className="font-display text-gold-bright text-2xl mt-1">
+                    {personalityReport?.title ?? "Reading the sky..."}
+                  </h2>
+                </div>
+                <div className="flex w-full items-center justify-between gap-4 md:w-auto md:justify-end">
+                  {personalityReport && (
+                    <p className="font-sans font-semibold uppercase text-gold text-xs tracking-[0.16em]">
+                      {personalityReport.dominantElement} · {personalityReport.dominantModality}
+                    </p>
+                  )}
+                  <ChevronDown
+                    className={`size-6 shrink-0 text-gold transition-transform ${
+                      showPersonalityReport ? "rotate-180" : ""
+                    }`}
+                  />
+                </div>
+              </button>
+            </CollapsibleTrigger>
+
+            <CollapsibleContent>
+              {personalityReport ? (
+                <div className="space-y-5 px-6 pb-6 pt-5">
+                  <p className="font-serif text-foreground text-lg leading-relaxed">
+                    {personalityReport.summary}
+                  </p>
+
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    <div>
+                      <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em]">
+                        SUN
+                      </p>
+                      <p className="font-sans font-semibold text-gold-bright mt-1">
+                        {formatPlacement(personalityReport.sun)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em]">
+                        MOON
+                      </p>
+                      <p className="font-sans font-semibold text-gold-bright mt-1">
+                        {formatPlacement(personalityReport.moon)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em]">
+                        VISIBLE PLANETS
+                      </p>
+                      <p className="font-sans font-semibold text-gold-bright mt-1">
+                        {personalityReport.visiblePlanets.length
+                          ? personalityReport.visiblePlanets.map((p) => p.name).join(", ")
+                          : "None above horizon"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em]">
+                        FIXED STAR
+                      </p>
+                      <p className="font-sans font-semibold text-gold-bright mt-1">
+                        {personalityReport.fixedStar?.star.name ?? "Below horizon"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {personalityReport.keywords.map((keyword) => (
+                      <span
+                        key={keyword}
+                        className="rounded border border-border bg-secondary/80 px-2 py-1 font-sans font-medium text-xs text-gold"
+                      >
+                        {keyword}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="grid gap-5 md:grid-cols-3">
+                    <div>
+                      <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em] mb-2">
+                        STRENGTHS
+                      </p>
+                      <ul className="space-y-2 font-sans text-sm leading-relaxed text-foreground">
+                        {personalityReport.strengths.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em] mb-2">
+                        GROWTH EDGE
+                      </p>
+                      <ul className="space-y-2 font-sans text-sm leading-relaxed text-foreground">
+                        {personalityReport.growth.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em] mb-2">
+                        SKY NOTES
+                      </p>
+                      <ul className="space-y-2 font-sans text-sm leading-relaxed text-foreground">
+                        {personalityReport.skyNotes.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  <p className="font-sans text-muted-foreground text-xs">
+                    For reflection and entertainment, not a scientific personality assessment.
+                  </p>
+                </div>
+              ) : (
+                <p className="px-6 pb-6 pt-5 font-sans text-muted-foreground text-sm">
+                  Loading the interpretation atlas...
                 </p>
               )}
-            </div>
-
-            {personalityReport ? (
-              <div className="pt-5 space-y-5">
-                <p className="font-serif text-foreground text-lg leading-relaxed">
-                  {personalityReport.summary}
-                </p>
-
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  <div>
-                    <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em]">
-                      SUN
-                    </p>
-                    <p className="font-sans font-semibold text-gold-bright mt-1">
-                      {formatPlacement(personalityReport.sun)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em]">
-                      MOON
-                    </p>
-                    <p className="font-sans font-semibold text-gold-bright mt-1">
-                      {formatPlacement(personalityReport.moon)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em]">
-                      VISIBLE PLANETS
-                    </p>
-                    <p className="font-sans font-semibold text-gold-bright mt-1">
-                      {personalityReport.visiblePlanets.length
-                        ? personalityReport.visiblePlanets.map((p) => p.name).join(", ")
-                        : "None above horizon"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em]">
-                      FIXED STAR
-                    </p>
-                    <p className="font-sans font-semibold text-gold-bright mt-1">
-                      {personalityReport.fixedStar?.star.name ?? "Below horizon"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {personalityReport.keywords.map((keyword) => (
-                    <span
-                      key={keyword}
-                      className="rounded border border-border bg-secondary/80 px-2 py-1 font-sans font-medium text-xs text-gold"
-                    >
-                      {keyword}
-                    </span>
-                  ))}
-                </div>
-
-                <div className="grid gap-5 md:grid-cols-3">
-                  <div>
-                    <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em] mb-2">
-                      STRENGTHS
-                    </p>
-                    <ul className="space-y-2 font-sans text-sm leading-relaxed text-foreground">
-                      {personalityReport.strengths.map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                    <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em] mb-2">
-                      GROWTH EDGE
-                    </p>
-                    <ul className="space-y-2 font-sans text-sm leading-relaxed text-foreground">
-                      {personalityReport.growth.map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div>
-                    <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em] mb-2">
-                      SKY NOTES
-                    </p>
-                    <ul className="space-y-2 font-sans text-sm leading-relaxed text-foreground">
-                      {personalityReport.skyNotes.map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                <p className="font-sans text-muted-foreground text-xs">
-                  For reflection and entertainment, not a scientific personality assessment.
-                </p>
-              </div>
-            ) : (
-              <p className="pt-5 font-sans text-muted-foreground text-sm">
-                Loading the interpretation atlas...
-              </p>
-            )}
-          </div>
+            </CollapsibleContent>
+          </Collapsible>
 
           <div className="hidden ornate-border rounded-xl bg-card/85">
             <button
