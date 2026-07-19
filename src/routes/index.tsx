@@ -430,7 +430,7 @@ function Index() {
                 }}
                 ampm={false}
                 format="HH:mm"
-                localeText={{ cancelButtonLabel: "Back" }}
+                localeText={{ cancelButtonLabel: "" }}
                 sx={{ width: "100%" }}
                 slotProps={{
                   textField: {
