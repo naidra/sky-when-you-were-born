@@ -2,11 +2,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import { format } from "date-fns";
-import { ChevronDown, Moon, Sun } from "lucide-react";
+import dayjs from "dayjs";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { TimePicker } from "@mui/x-date-pickers/TimePicker";
+import { CalendarDays, ChevronDown, Moon, Sun } from "lucide-react";
 import { StarMap } from "@/components/StarMap";
 import { MoonPhase } from "@/components/MoonPhase";
 import { ShareCard } from "@/components/ShareCard";
+import { Calendar } from "@/components/ui/calendar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { type City } from "@/lib/cities";
 import { createPersonalityReport, formatPlacement, type PersonalityAtlas } from "@/lib/personality";
 import { computeMoon, computePlanets, computeStars, computeSun, type SkyInputs } from "@/lib/sky";
@@ -48,6 +54,21 @@ function parseDateTime(dateStr: string, timeStr: string): Date | null {
     date.getHours() !== hh ||
     date.getMinutes() !== mm
   ) {
+    return null;
+  }
+
+  return date;
+}
+
+function parseDateOnly(dateStr: string): Date | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return null;
+  }
+
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+
+  if (date.getFullYear() !== y || date.getMonth() !== m - 1 || date.getDate() !== d) {
     return null;
   }
 
@@ -100,14 +121,12 @@ function publicAsset(path: string) {
 }
 
 function getInitialTheme(): Theme {
-  if (typeof window === "undefined") return "dark";
-  const saved = window.localStorage.getItem("sky-theme");
-  if (saved === "light" || saved === "dark") return saved;
   return "dark";
 }
 
 function Index() {
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
+  const didHydrateTheme = useRef(false);
   const [currentDate, setCurrentDate] = useState<Date | null>(null);
   const [showPersonalityReport, setShowPersonalityReport] = useState(false);
   const [showTransitCalculator, setShowTransitCalculator] = useState(false);
@@ -127,6 +146,17 @@ function Index() {
   const [cityName, setCityName] = useState("Pristina");
 
   useEffect(() => {
+    const saved = window.localStorage.getItem("sky-theme");
+    const nextTheme = saved === "light" || saved === "dark" ? saved : "dark";
+    document.documentElement.classList.toggle("dark", nextTheme === "dark");
+    setTheme(nextTheme);
+  }, []);
+
+  useEffect(() => {
+    if (!didHydrateTheme.current) {
+      didHydrateTheme.current = true;
+      return;
+    }
     document.documentElement.classList.toggle("dark", theme === "dark");
     window.localStorage.setItem("sky-theme", theme);
   }, [theme]);
@@ -209,6 +239,8 @@ function Index() {
     };
   }, [country, stateObj, cityRow]);
 
+  const selectedDate = useMemo(() => parseDateOnly(dateStr), [dateStr]);
+  const selectedTime = useMemo(() => dayjs(`2000-01-01T${timeStr}`), [timeStr]);
   const utcDate = useMemo(() => localToUTC(dateStr, timeStr, city.tz), [dateStr, timeStr, city.tz]);
   const localDate = useMemo(() => parseDateTime(dateStr, timeStr), [dateStr, timeStr]);
   const dateError = !localDate ? "Enter a valid calendar date and time." : null;
@@ -245,7 +277,11 @@ function Index() {
   const handleShare = async () => {
     if (!shareRef.current || !input || !localDate) return;
     try {
-      const dataUrl = await toPng(shareRef.current, { pixelRatio: 2, cacheBust: true });
+      const dataUrl = await toPng(shareRef.current, {
+        pixelRatio: 2,
+        cacheBust: true,
+        backgroundColor: theme === "dark" ? "oklch(0.06 0.02 260)" : "oklch(0.91 0.04 215)",
+      });
       const link = document.createElement("a");
       link.download = `sky-above-${city.name.toLowerCase()}-${dateStr}.png`;
       link.href = dataUrl;
@@ -356,29 +392,175 @@ function Index() {
             </select>
           </label>
 
-          <label className="block mb-4">
+          <div className="block mb-4">
             <span className="font-sans font-medium text-muted-foreground text-sm">Date</span>
-            <input
-              type="date"
-              value={dateStr}
-              onChange={(e) => setDateStr(e.target.value)}
-              className="mt-1 w-full bg-input border border-border rounded-md px-3 py-2 text-foreground font-sans text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring [color-scheme:light] dark:[color-scheme:dark]"
-              aria-invalid={!!dateError}
-            />
-          </label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="mt-1 flex w-full items-center justify-between gap-3 rounded-md border border-border bg-input px-3 py-2 text-left font-sans text-sm text-foreground shadow-sm transition-colors hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-ring"
+                  aria-invalid={!!dateError}
+                >
+                  <span>{selectedDate ? format(selectedDate, "PPP") : "Choose a date"}</span>
+                  <CalendarDays className="size-4 shrink-0 text-muted-foreground" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate ?? undefined}
+                  onSelect={(date) => {
+                    if (date) setDateStr(format(date, "yyyy-MM-dd"));
+                  }}
+                  captionLayout="dropdown"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
 
-          <label className="block mb-6">
+          <div className="block mb-6">
             <span className="font-sans font-medium text-muted-foreground text-sm">
               Time (local)
             </span>
-            <input
-              type="time"
-              value={timeStr}
-              onChange={(e) => setTimeStr(e.target.value)}
-              className="mt-1 w-full bg-input border border-border rounded-md px-3 py-2 text-foreground font-sans text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring [color-scheme:light] dark:[color-scheme:dark]"
-              aria-invalid={!!dateError}
-            />
-          </label>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <TimePicker
+                value={selectedTime.isValid() ? selectedTime : null}
+                onChange={(value) => {
+                  if (value?.isValid()) setTimeStr(value.format("HH:mm"));
+                }}
+                ampm={false}
+                format="HH:mm"
+                localeText={{ cancelButtonLabel: "Back" }}
+                sx={{ width: "100%" }}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    size: "small",
+                    error: !!dateError,
+                    inputProps: { "aria-label": "Birth time" },
+                    sx: {
+                      width: "100%",
+                      mt: "0.25rem",
+                      "& .MuiInputBase-root, & .MuiPickersInputBase-root": {
+                        width: "100%",
+                        minHeight: "2.5rem",
+                        borderRadius: "var(--radius-md)",
+                        backgroundColor: "var(--color-input)",
+                        color: "var(--color-foreground)",
+                        fontFamily: "var(--font-sans)",
+                        fontSize: "0.875rem",
+                        boxShadow: "0 1px 2px oklch(0 0 0 / 5%)",
+                      },
+                      "& .MuiOutlinedInput-notchedOutline, & .MuiPickersOutlinedInput-notchedOutline":
+                        {
+                          borderColor: "var(--color-border)",
+                        },
+                      "& .MuiInputBase-root:hover .MuiOutlinedInput-notchedOutline, & .MuiPickersInputBase-root:hover .MuiPickersOutlinedInput-notchedOutline":
+                        {
+                          borderColor: "var(--color-border)",
+                        },
+                      "& .Mui-focused .MuiOutlinedInput-notchedOutline, & .MuiPickersInputBase-root.Mui-focused .MuiPickersOutlinedInput-notchedOutline":
+                        {
+                          borderColor: "var(--color-ring)",
+                          borderWidth: "2px",
+                        },
+                      "& .MuiInputBase-input, & .MuiPickersSectionList-root, & .MuiPickersSectionList-sectionContent":
+                        {
+                          color: "var(--color-foreground)",
+                          fontFamily: "var(--font-sans)",
+                          fontSize: "0.875rem",
+                        },
+                      "& .MuiInputBase-input": {
+                        color: "var(--color-foreground)",
+                        fontFamily: "var(--font-sans)",
+                        fontSize: "0.875rem",
+                        padding: "0.5rem 0.75rem",
+                      },
+                      "& .MuiIconButton-root, & .MuiSvgIcon-root": {
+                        color: "var(--color-muted-foreground)",
+                      },
+                      "& .MuiIconButton-root:hover, & .MuiIconButton-root:focus-visible": {
+                        color: "var(--gold-bright)",
+                        backgroundColor: "var(--color-secondary)",
+                      },
+                    },
+                  },
+                  popper: {
+                    sx: {
+                      zIndex: 60,
+                      "& .MuiPaper-root": {
+                        border: "1px solid var(--color-border)",
+                        borderRadius: "var(--radius-md)",
+                        backgroundColor: "var(--color-popover)",
+                        color: "var(--color-popover-foreground)",
+                        boxShadow: "var(--shadow-gold)",
+                      },
+                      "& .MuiTimeClock-root, & .MuiClock-root, & .MuiPickersLayout-root": {
+                        backgroundColor: "var(--color-popover)",
+                        color: "var(--color-popover-foreground)",
+                      },
+                      "& .MuiPickersLayout-root": {
+                        display: "grid",
+                        gridAutoColumns: "unset",
+                        gridTemplateColumns: "max-content",
+                        gridTemplateRows: "max-content max-content",
+                        width: "max-content",
+                        maxWidth: "min(100vw - 2rem, max-content)",
+                        overflow: "hidden",
+                      },
+                      "& .MuiPickersLayout-contentWrapper": {
+                        gridColumn: "1",
+                        gridRow: "1",
+                        width: "max-content",
+                      },
+                      "& .MuiPickersLayout-actionBar": {
+                        gridColumn: "1",
+                        gridRow: "2",
+                        display: "flex",
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        gap: "0.5rem",
+                        borderTop: "1px solid var(--color-border)",
+                        padding: "0.5rem 0.75rem",
+                        width: "100%",
+                        boxSizing: "border-box",
+                      },
+                      "& .MuiPickersLayout-actionBar .MuiButton-root": {
+                        minWidth: "0",
+                        padding: "0.35rem 0.75rem",
+                        color: "var(--color-popover-foreground)",
+                        fontFamily: "var(--font-sans)",
+                        fontSize: "0.75rem",
+                        lineHeight: "1.25rem",
+                      },
+                      "& .MuiPickersLayout-actionBar .MuiButton-root:hover": {
+                        backgroundColor: "var(--color-secondary)",
+                        color: "var(--gold-bright)",
+                      },
+                      "& .MuiClockNumber-root, & .MuiPickersToolbarText-root, & .MuiTypography-root":
+                        {
+                          color: "var(--color-popover-foreground)",
+                        },
+                      "& .MuiClockNumber-root.Mui-selected": {
+                        backgroundColor: "var(--gold)",
+                        color: "var(--color-primary-foreground)",
+                      },
+                      "& .MuiClock-pin, & .MuiClockPointer-root, & .MuiClockPointer-thumb": {
+                        backgroundColor: "var(--gold)",
+                        borderColor: "var(--gold)",
+                      },
+                      "& .MuiClockPointer-thumb": {
+                        borderColor: "var(--gold)",
+                      },
+                      "& .MuiButtonBase-root": {
+                        color: "var(--color-popover-foreground)",
+                      },
+                    },
+                  },
+                }}
+              />
+            </LocalizationProvider>
+          </div>
 
           {dateError && (
             <p className="-mt-4 mb-6 rounded-md border border-border bg-secondary/70 px-3 py-2 font-sans text-sm text-muted-foreground">
@@ -500,9 +682,14 @@ function Index() {
                 aria-label={`${showPersonalityReport ? "Collapse" : "Expand"} personality report`}
               >
                 <div>
-                  <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em]">
-                    PERSONALITY REPORT
-                  </p>
+                  <div className="flex flex-col gap-1 md:flex-row md:items-center md:gap-3">
+                    <p className="font-sans font-semibold uppercase text-gold text-[11px] tracking-[0.18em]">
+                      PERSONALITY REPORT
+                    </p>
+                    <p className="font-sans text-sm text-muted-foreground">
+                      People born on this day are likely to have these traits
+                    </p>
+                  </div>
                   <h2 className="font-display text-gold-bright text-2xl mt-1">
                     {personalityReport?.title ?? "Reading the sky..."}
                   </h2>
@@ -768,7 +955,7 @@ function Index() {
       {/* Hidden share card for export */}
       {input && localDate && (
         <div className="fixed -left-[9999px] top-0">
-          <ShareCard ref={shareRef} input={input} city={city} localDate={localDate} />
+          <ShareCard ref={shareRef} input={input} city={city} localDate={localDate} theme={theme} />
         </div>
       )}
     </div>

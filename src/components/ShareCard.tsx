@@ -10,21 +10,25 @@ interface ShareCardProps {
   input: SkyInputs;
   city: City | { name: string; country: string };
   localDate: Date;
+  theme: "light" | "dark";
 }
 
 export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
-  ({ input, city, localDate }, ref) => {
+  ({ input, city, localDate, theme }, ref) => {
     const moon = computeMoon(input);
+    const isDark = theme === "dark";
     return (
       <div
         ref={ref}
-        className="ornate-border bg-night-deep relative overflow-hidden"
+        className={`${isDark ? "dark" : ""} ornate-border relative overflow-hidden`}
         style={{
           width: 720,
           height: 900,
           padding: 40,
-          background:
-            "radial-gradient(ellipse at center, oklch(0.18 0.04 250) 0%, oklch(0.06 0.02 260) 100%)",
+          background: isDark
+            ? "radial-gradient(ellipse at center, oklch(0.18 0.04 250) 0%, oklch(0.06 0.02 260) 100%)"
+            : "radial-gradient(ellipse at center, oklch(0.99 0.02 86) 0%, oklch(0.91 0.04 215) 100%)",
+          color: "var(--color-foreground)",
         }}
       >
         {/* Ornamental corner flourishes */}
@@ -49,9 +53,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(
           <h1 className="font-display text-gold-bright text-2xl mt-2 tracking-widest">
             The Sky Above {city.name}
           </h1>
-          <p className="font-serif italic text-gold mt-1 text-lg opacity-80">
-            when you were born
-          </p>
+          <p className="font-serif italic text-gold mt-1 text-lg opacity-80">when you were born</p>
         </div>
 
         <div className="flex justify-center mt-4">

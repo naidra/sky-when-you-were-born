@@ -79,7 +79,6 @@ export const BRIGHT_STARS: BrightStar[] = [
   { name: "Merak", ra: 11.0307, dec: 56.3824, mag: 2.37, con: "UMa" },
   { name: "Phecda", ra: 11.8972, dec: 53.6948, mag: 2.44, con: "UMa" },
   { name: "Megrez", ra: 12.2571, dec: 57.0326, mag: 3.31, con: "UMa" },
-  { name: "Alioth", ra: 12.9004, dec: 55.9598, mag: 1.76, con: "UMa" },
   { name: "Ruchbah", ra: 1.4302, dec: 60.2354, mag: 2.66, con: "Cas" },
   { name: "Navi", ra: 0.9451, dec: 60.7167, mag: 2.47, con: "Cas" },
   { name: "Mintaka", ra: 5.5334, dec: -0.2991, mag: 2.23, con: "Ori" },
